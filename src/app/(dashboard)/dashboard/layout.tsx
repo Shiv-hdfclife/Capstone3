@@ -43,8 +43,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setOpen((prev) => ({ ...prev, leftSection: pressed }));
     },
     []
-  );
-
+  ); 
+ 
   const { isAuthenticated, name, role } = useAppSelector((s) => s.user);
 
   const sidebarItems = [
