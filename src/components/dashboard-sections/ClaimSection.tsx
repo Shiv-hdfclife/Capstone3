@@ -1,5 +1,5 @@
 export default function ClaimSection() {
     return (
-        <div>ClaimSection</div>
+        <div> Claim Section</div>
     )
 }
