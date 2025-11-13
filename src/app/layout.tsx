@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "../../node_modules/@hdfclife-insurance/one-x-ui/styles.css";
+import { ReduxProvider } from "../components/ReduxProvier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ReduxProvider>
+          {/* <FrontendObservability /> */}
+          {children}
+        </ReduxProvider>
       </body>
     </html>
   );

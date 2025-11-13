@@ -16,8 +16,8 @@ import {
 import { Eye, EyeSlash, WhatsappLogoIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-// import { useAppDispatch } from "../../../store/hooks";
-// import { loginStart, loginSuccess, loginFailure } from "../../../store/slices/userSlice";
+import { useAppDispatch } from "../../../store/hooks";
+import { loginStart, loginSuccess, loginFailure } from "../../../store/slices/userSlice";
 import Whatsapp from '../../assets/whatsapp-logo.svg'
 // import Logo from '../../assets/download.svg'
 import Image from "next/image";
@@ -43,27 +43,27 @@ const Login = () => {
     const [signupError, setSignupError] = useState("");
 
     const router = useRouter();
-    // const dispatch = useAppDispatch();
+    const dispatch = useAppDispatch();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Reset error state
         setError("");
-        // dispatch(loginStart());
+        dispatch(loginStart());
 
         // Basic validation
         if (!username.trim()) {
             const errorMsg = "Please enter your username/email";
             setError(errorMsg);
-            // dispatch(loginFailure(errorMsg));
+            dispatch(loginFailure(errorMsg));
             return;
         }
 
         if (!password.trim()) {
             const errorMsg = "Please enter your password";
             setError(errorMsg);
-            // dispatch(loginFailure(errorMsg));
+            dispatch(loginFailure(errorMsg));
             return;
         }
 
@@ -74,20 +74,34 @@ const Login = () => {
                 username: username,
                 passwordLength: password.length
             });
+            console.log("Entering bff")
+
+            const requestBody = {
+                username: username.trim(),
+                password: password.trim(),
+                grant_type: "password",
+                client_id: "intelli-claim-ui",
+            };
+
+            console.log('📦 Request body being sent:', {
+                username: requestBody.username,
+                grant_type: requestBody.grant_type,
+                client_id: requestBody.client_id,
+                passwordProvided: !!requestBody.password
+            });
 
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    username: username.trim(),
-                    password: password.trim(),
-                }),
+                body: JSON.stringify(requestBody),
                 credentials: 'include', // Include cookies in request
             });
+            console.log("Exiting bff")
 
             const data = await response.json();
+            console.log("Data:", data)
 
             console.log('📝 Login response:', {
                 status: response.status,
@@ -110,7 +124,7 @@ const Login = () => {
                 console.log('👤 Storing user data in Redux:', userPayload);
 
                 // Dispatch login success with user data
-                // dispatch(loginSuccess(userPayload));
+                dispatch(loginSuccess(userPayload));
 
                 // Successful login - redirect to dashboard
                 router.push('/dashboard');
@@ -118,7 +132,7 @@ const Login = () => {
                 // Handle login error
                 const errorMsg = data.message || 'Login failed. Please check your credentials.';
                 setError(errorMsg);
-                // dispatch(loginFailure(errorMsg));
+                dispatch(loginFailure(errorMsg));
                 console.error('❌ Login failed:', data.message);
             }
 
@@ -126,7 +140,7 @@ const Login = () => {
             console.error('❌ Login error:', error);
             const errorMsg = 'Network error. Please check your connection and try again.';
             setError(errorMsg);
-            // dispatch(loginFailure(errorMsg));
+            dispatch(loginFailure(errorMsg));
         } finally {
             setLoading(false);
         }
