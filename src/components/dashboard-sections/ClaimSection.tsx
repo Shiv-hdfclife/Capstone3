@@ -1,5 +1,9 @@
+import ClaimsTable from '../claims/ClaimsTable'
+
 export default function ClaimSection() {
     return (
-        <div> Claim Section</div>
+        <>
+            <ClaimsTable userRole='user' />
+        </>
     )
 }
