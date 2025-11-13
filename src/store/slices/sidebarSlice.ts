@@ -1,14 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SidebarState {
-  leftSectionMobile: boolean;
-  leftSectionDesktop: boolean;
+  leftDesktopOpen: boolean;
+  leftMobileOpen: boolean;
   selectedSection: string;
 }
 
 const initialState: SidebarState = {
-  leftSectionMobile: false,
-  leftSectionDesktop: true,
+  leftDesktopOpen: true,
+  leftMobileOpen: false,
   selectedSection: "dashboard",
 };
 
@@ -16,11 +16,11 @@ const sidebarSlice = createSlice({
   name: "sidebar",
   initialState,
   reducers: {
-    setLeftSectionMobile(state, action: PayloadAction<boolean>) {
-      state.leftSectionMobile = action.payload;
+    setLeftDesktopOpen(state, action: PayloadAction<boolean>) {
+      state.leftDesktopOpen = action.payload;
     },
-    setLeftSectionDesktop(state, action: PayloadAction<boolean>) {
-      state.leftSectionDesktop = action.payload;
+    setLeftMobileOpen(state, action: PayloadAction<boolean>) {
+      state.leftMobileOpen = action.payload;
     },
     setSelectedSection(state, action: PayloadAction<string>) {
       state.selectedSection = action.payload;
@@ -28,6 +28,10 @@ const sidebarSlice = createSlice({
   },
 });
 
-export const { setLeftSectionMobile, setLeftSectionDesktop, setSelectedSection } =
-  sidebarSlice.actions;
+export const {
+  setLeftDesktopOpen,
+  setLeftMobileOpen,
+  setSelectedSection,
+} = sidebarSlice.actions;
+
 export default sidebarSlice.reducer;
