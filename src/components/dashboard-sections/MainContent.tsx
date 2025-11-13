@@ -6,10 +6,8 @@ import ClaimSection from './ClaimSection';
 
 export default function MainContent() {
     const selectedSection = useAppSelector((state) => state.sidebar.selectedSection);
-    const loaderContent = useAppSelector((state) => state.sidebar.loaderContent);
 
     console.log("Current selected section:", selectedSection);
-    console.log("Loader content state:", loaderContent);
 
     const renderSection = () => {
         switch (selectedSection) {

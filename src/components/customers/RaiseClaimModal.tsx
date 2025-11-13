@@ -12,7 +12,8 @@ import {
   Flex,
   Heading
 } from "@hdfclife-insurance/one-x-ui";
-import { useClaimsContext as useClaims } from '../../contexts/ClaimsContext';
+import { useAppDispatch } from '../../store/hooks';
+import { createClaim } from '../../store/slices/claimsSlice';
 
 type Customer = {
   policyId: number;
@@ -31,7 +32,7 @@ interface RaiseClaimModalProps {
 }
 
 export default function RaiseClaimModal({ customer, onClose }: RaiseClaimModalProps) {
-  const { raiseClaim } = useClaims();
+  const dispatch = useAppDispatch();
   const [amount, setAmount] = useState('');
   const [aadhar, setAadhar] = useState(false);
   const [pan, setPan] = useState(false);
@@ -51,14 +52,15 @@ export default function RaiseClaimModal({ customer, onClose }: RaiseClaimModalPr
 
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await raiseClaim({
+      await dispatch(createClaim({
         policyId: customer.policyId,
+        policyNumber: customer.policyNumber,
+        claimantName: customer.holderName,
         claimAmount: parseFloat(amount),
         aadharSubmitted: aadhar,
         panSubmitted: pan,
         deathCertificateSubmitted: deathCert
-      });
+      })).unwrap();
       onClose();
     } catch (error) {
       console.error('Error raising claim:', error);

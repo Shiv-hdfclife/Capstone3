@@ -1,91 +1,144 @@
+// /src/components/DashboardLayout.tsx
 "use client";
-import React, { useState, useCallback } from "react";
-import { Header, Avatar, Text, Caption, IconButton, Flex, Divider, Badge } from "@hdfclife-insurance/one-x-ui";
-import "../../globals.css";
+
+import React, { useCallback, useState } from "react";
 import Image from "next/image";
-import Logo from "../../../../public/Logo.png"
-import { Drawer, DrawerContent, Select, Upload } from "@hdfclife-insurance/one-x-ui";
-import { UploadSimple, FileArrowDown, Bell } from "@phosphor-icons/react";
-import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { setLeftSection } from "../../../store/slices/sidebarSlice";
-import { logout } from "../../../store/slices/userSlice";
+import {
+  Header,
+  Avatar,
+  CollapsibleSidebar,
+  Drawer,
+  DrawerContent,
+  ScrollArea,
+  Text,
+  Caption,
+} from "@hdfclife-insurance/one-x-ui";
+import HDFC_Life_Logo from "../../../assets/HDFC_Life_Logo.svg";
 
-export default function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const dispatch = useAppDispatch();
-    const { leftSection } = useAppSelector((state) => state.sidebar);
-    const { isAuthenticated, name, role, loading } = useAppSelector((state) => state.user);
+import {
+  House,
+  Users,
+  ShieldCheck,
+  Layout,
+  UserGear,
+  Handshake,
+  Copy,
+  TrendUp,
+  Gear,
+} from "@phosphor-icons/react";
 
-    const handlePressedChange = useCallback((pressed: boolean) => {
-        dispatch(setLeftSection(pressed));
-    }, [dispatch]);
+import useIsDesktop from "../../../hooks/useIsDesktop";
+import { useAppSelector } from "../../../store/hooks";
 
-    return (
-        <div className="min-h-dvh flex flex-col bg-gray-100 [--left-sidebar-width:240px] [--left-sidebar-width-mobile:280px] [--gutter:16px] lg:[--gutter:24px] [--header-height:68px] [--right-sidebar-width:80px]">
-            <Header
-                fixed
-                className="border-0 border-b border-solid border-indigo-200 z-50"
-            >
-                <Header.Hamburger
-                    pressed={leftSection}
-                    onPressedChange={handlePressedChange}
-                />
-                <div className="flex items-center h-full max-h-[50px]">
-                    <Image
-                        src={Logo}
-                        className="h-auto max-h-[32px] lg:max-h-[40px] w-auto object-contain"
-                        alt="Logo"
-                        height={40}
-                        width={150}
-                    />
-                </div>
-                <div className="flex items-center justify-end gap-2 lg:gap-3 w-full">
-                    {isAuthenticated ? (
-                        <>
-                            <div className="text-right hidden lg:block">
-                                <Text size="sm" fontWeight="bold">
-                                    {name || 'User'}
-                                </Text>
-                                <Text size="sm">{role || 'Guest'}</Text>
-                                <Caption className="italic text-xs">
-                                    Last login : {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
-                                </Caption>
-                            </div>
-                            <Avatar
-                                variant="outline"
-                                src="https://helixassets.apps-hdfclife.com/images/Childcare_2.png"
-                                className="w-8 h-8 lg:w-10 lg:h-10"
-                            />
-                            <button
-                                onClick={() => {
-                                    dispatch(logout());
-                                    window.location.href = '/login';
-                                }}
-                                className="text-xs lg:text-sm text-blue-600 hover:text-blue-800 transition-colors ml-1 lg:ml-2 px-2 py-1 rounded hover:bg-blue-50"
-                            >
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <div className="text-right hidden lg:block">
-                            <Text size="sm" fontWeight="bold">
-                                Guest
-                            </Text>
-                            <Text size="sm">Not logged in</Text>
-                        </div>
-                    )}
-                </div>
-            </Header>
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const isDesktop = useIsDesktop();
 
-            {children}
+  // LOCAL OPEN STATE – same as reference behavior
+  const [open, setOpen] = useState({
+    leftSection: false, // collapsed by default, fix fade too
+  });
 
+  const handlePressedChange = useCallback(
+    (pressed: boolean) => {
+      setOpen((prev) => ({ ...prev, leftSection: pressed }));
+    },
+    []
+  );
 
+  const { isAuthenticated, name, role } = useAppSelector((s) => s.user);
 
+  const sidebarItems = [
+    { label: "Claims", href: "/claims", icon: <ShieldCheck /> },
+    { label: "Prospects", href: "/prospects", icon: <UserGear /> },
+  ];
 
+  return (
+    <div className="min-h-dvh flex flex-col bg-gray-100 [--left-sidebar-width:240px] [--right-sidebar-width:60px] [--gutter:24px] [--header-height:68px]">
+
+      {/* HEADER */}
+      <Header fixed className="border-0 border-b border-solid border-indigo-200 z-50">
+
+        {/* Mobile hamburger only */}
+        <Header.Hamburger
+          className="lg:hidden"
+          pressed={open.leftSection}
+          onPressedChange={handlePressedChange}
+        />
+
+        <Header.Logo src={HDFC_Life_Logo.src} className="!w-[150px]" />
+
+        <div className="flex items-center justify-end gap-3 w-full">
+          <div className="text-right hidden lg:block">
+            <Text size="sm" fontWeight="bold">{name ?? "Guest"}</Text>
+            <Text size="sm">{role ?? "Not logged in"}</Text>
+            <Caption className="italic">
+              Last login : {new Date().toLocaleDateString()}
+            </Caption>
+          </div>
         </div>
-    );
+      </Header>
+
+      <div className="lg:flex flex-1">
+
+        {/* DESKTOP SIDEBAR */}
+        <aside
+          style={
+            {
+              "--left-sidebar-width": open.leftSection ? "240px" : "78px",
+            } as React.CSSProperties
+          }
+          className="hidden lg:flex flex-col fixed transition-all duration-300 ease-in-out bottom-0 top-0 pt-[var(--header-height)] left-0"
+        >
+          <CollapsibleSidebar
+            collapsed={!open.leftSection}
+            items={sidebarItems.map((item) => ({
+              label: item.label,
+              href: item.href,
+              leftSection: item.icon,
+            }))}
+          />
+        </aside>
+
+        {/* MOBILE DRAWER */}
+        {!isDesktop && (
+          <Drawer
+            open={open.leftSection}
+            onClose={() => setOpen({ leftSection: false })}
+            direction="left"
+          >
+            <DrawerContent className="w-[250px] px-3">
+              <ScrollArea className="flex-1 h-0">
+                <div className="space-y-1">
+                  {sidebarItems.map((item) => (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100"
+                      onClick={() => setOpen({ leftSection: false })}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </a>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DrawerContent>
+          </Drawer>
+        )}
+
+        {/* MAIN PAGE */}
+        <main
+          style={
+            {
+              "--left-sidebar-width": open.leftSection ? "240px" : "76px",
+            } as React.CSSProperties
+          }
+          className="flex-1 px-4 lg:px-0 pb-[var(--gutter)] pt-[calc(var(--header-height)+var(--gutter))] lg:pl-[calc(var(--gutter)+var(--left-sidebar-width))] lg:pr-[calc(var(--right-sidebar-width)+var(--gutter))] duration-300 ease-in-out transition-[padding] overflow-x-hidden"
+        >
+          {children}
+        </main>
+
+      </div>
+    </div>
+  );
 }

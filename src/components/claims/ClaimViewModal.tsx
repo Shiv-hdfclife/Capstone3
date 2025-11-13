@@ -7,14 +7,14 @@ import {
   Text,
   Caption,
   Checkbox,
-  TextField,
   Button,
   Flex,
   Heading,
   Badge,
   TextArea
 } from "@hdfclife-insurance/one-x-ui";
-// import { useClaimsContext as useClaims } from '../../contexts/ClaimsContext';
+import { useAppDispatch } from '../../store/hooks';
+import { updateClaimStatus } from '../../store/slices/claimsSlice';
 
 type Claim = {
   claimId: number;
@@ -36,7 +36,7 @@ interface ClaimViewModalProps {
 }
 
 export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewModalProps) {
-  // const { decisionOnClaim } = useClaims();
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState('');
 
@@ -54,14 +54,13 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
 
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await decisionOnClaim(
-        claim.claimId,
-        decision,
-        decision === 'Rejected'
+      await dispatch(updateClaimStatus({
+        claimId: claim.claimId,
+        status: decision,
+        adminNote: decision === 'Rejected' 
           ? note || `Missing documents: ${missingDocs.join(', ')}`
           : note
-      );
+      })).unwrap();
       onClose();
     } catch (error) {
       console.error('Error processing claim decision:', error);
