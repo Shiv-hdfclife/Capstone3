@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Button,
   Table,
@@ -24,7 +24,8 @@ import {
   SortingState,
   PaginationState
 } from "@tanstack/react-table";
-import { useClaimsContext } from '../../contexts/ClaimsContext';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { fetchCustomers } from '../../store/slices/customersSlice';
 import RaiseClaimModal from './RaiseClaimModal';
 
 type Customer = {
@@ -39,13 +40,20 @@ type Customer = {
 };
 
 export default function CustomersTable() {
-  const { customers } = useClaimsContext();
+  const dispatch = useAppDispatch();
+  const customers = useAppSelector(state => state.cusstomers.customers);
+  const loading = useAppSelector(state => state.cusstomers.loading);
+  
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  useEffect(() => {
+    dispatch(fetchCustomers());
+  }, [dispatch]);
 
   const columnHelper = createColumnHelper<Customer>();
 
@@ -114,6 +122,10 @@ export default function CustomersTable() {
       pagination,
     },
   });
+
+  if (loading) {
+    return <div>Loading customers...</div>;
+  }
 
   return (
     <div className="space-y-4">

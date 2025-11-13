@@ -1,7 +1,19 @@
 import "@hdfclife-insurance/one-x-ui/styles.css";
 import type { Metadata } from "next";
-import { AuthProvider } from "../contexts/AuthContext";
-import { ClaimsProvider } from "../contexts/ClaimsContext";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import "../../node_modules/@hdfclife-insurance/one-x-ui/styles.css";
+import { ReduxProvider } from "../components/ReduxProvier";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "HDFC Life Insurance Dashboard",
@@ -15,12 +27,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <AuthProvider>
-          <ClaimsProvider>
-            {children}
-          </ClaimsProvider>
-        </AuthProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ReduxProvider>
+          {/* <FrontendObservability /> */}
+          {children}
+        </ReduxProvider>
       </body>
     </html>
   );
