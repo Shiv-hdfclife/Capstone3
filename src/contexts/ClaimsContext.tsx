@@ -1,10 +1,32 @@
-// src/contexts/ClaimsContext.tsx
 "use client";
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
 
-export type Customer = any;
-export type Claim = any;
+export type Customer = {
+  policyId: number;
+  policyNumber: string;
+  holderName: string;
+  coverageAmount: number;
+  email: string;
+  phone: string;
+  active: boolean;
+  createdDate: string;
+  userId: string;
+};
+
+export type Claim = {
+  claimId: number;
+  policyNumber: string;
+  claimantName: string;
+  claimAmount: number;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  aadharSubmitted: boolean;
+  panSubmitted: boolean;
+  deathCertificateSubmitted: boolean;
+  createdDate: string;
+  adminNote?: string;
+  userId: string;
+};
 
 type ClaimsContextType = {
   customers: Customer[];
@@ -20,6 +42,11 @@ type ClaimsContextType = {
     aadharSubmitted: boolean;
     panSubmitted: boolean;
     deathCertificateSubmitted: boolean;
+    policyNumber?: string;
+    claimantName?: string;
+    createdDate?: string;
+    adminNote?: string;
+    userId?: string;
   }) => Promise<void>;
 };
 
@@ -35,6 +62,8 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
     try {
       const res = await api.fetchCustomers();
       setCustomers(res);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
     } finally {
       setLoading(false);
     }
@@ -44,7 +73,9 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
     setLoading(true);
     try {
       const res = await api.fetchClaims(opts);
-      setClaims(res);
+      setClaims(res as Claim[]);
+    } catch (error) {
+      console.error('Error fetching claims:', error);
     } finally {
       setLoading(false);
     }
@@ -57,6 +88,9 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
       // Add optimistically to local list
       setClaims(prev => [created, ...prev]);
       return created;
+    } catch (error) {
+      console.error('Error creating claim:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -69,6 +103,49 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
       // update local state
       setClaims(prev => prev.map(c => c.claimId === id ? { ...c, status: decision, adminNote: note } : c));
       return res;
+    } catch (error) {
+      console.error('Error updating claim decision:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Fixed raiseClaim function - it should be separate from createClaim
+  async function raiseClaim(claimData: {
+    policyId: number;
+    claimAmount: number;
+    aadharSubmitted: boolean;
+    panSubmitted: boolean;
+    deathCertificateSubmitted: boolean;
+    policyNumber?: string;
+    claimantName?: string;
+    createdDate?: string;
+    adminNote?: string;
+    userId?: string;
+  }) {
+    setLoading(true);
+    try {
+      // Find customer details from policyId
+      const customer = customers.find(c => c.policyId === claimData.policyId);
+      
+      const payload = {
+        ...claimData,
+        policyNumber: claimData.policyNumber || customer?.policyNumber || 'UNKNOWN',
+        claimantName: claimData.claimantName || customer?.holderName || 'Unknown',
+        createdDate: claimData.createdDate || new Date().toISOString(),
+        userId: claimData.userId || '1' // Default user ID
+      };
+
+      const created = await api.createClaim(payload);
+      // Add optimistically to local list
+      setClaims(prev => [created, ...prev]);
+      
+      // Refresh claims to get updated list
+      await fetchClaims();
+    } catch (error) {
+      console.error('Error raising claim:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -81,7 +158,16 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
   }, []);
 
   return (
-    <ClaimsContext.Provider value={{ customers, claims, loading, fetchCustomers, fetchClaims, createClaim, decisionOnClaim, raiseClaim: createClaim }}>
+    <ClaimsContext.Provider value={{ 
+      customers, 
+      claims, 
+      loading, 
+      fetchCustomers, 
+      fetchClaims, 
+      createClaim, 
+      decisionOnClaim, 
+      raiseClaim 
+    }}>
       {children}
     </ClaimsContext.Provider>
   );

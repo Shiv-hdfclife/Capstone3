@@ -12,7 +12,7 @@ import {
   Users,
 } from "@phosphor-icons/react";
 import clsx from "clsx";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import HLIInspireLogo from "../../../assets/HDFC_Life_Logo.svg";
 import ProspectsSection from "../../../components/prospects/ProspectsSection";
@@ -23,6 +23,15 @@ export default function DashboardBase() {
   const { user } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(user?.role === 'admin' ? 'claims' : 'prospects');
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Dashboard Debug:', {
+      user,
+      activeSection,
+      userRole: user?.role
+    });
+  }, [user, activeSection]);
 
   const handleSidebarToggle = useCallback((pressed: boolean) => {
     setSidebarOpen(pressed);
@@ -36,7 +45,10 @@ export default function DashboardBase() {
           href: "#",
           leftSection: <ShieldCheck color={colors["brand-red"]} />,
           active: activeSection === 'claims',
-          onClick: () => setActiveSection('claims')
+          onClick: () => {
+            console.log('Claims clicked!');
+            setActiveSection('claims');
+          }
         }
       ];
     }
@@ -47,19 +59,27 @@ export default function DashboardBase() {
         href: "#",
         leftSection: <Users color={activeSection === 'prospects' ? colors["brand-red"] : undefined} />,
         active: activeSection === 'prospects',
-        onClick: () => setActiveSection('prospects')
+        onClick: () => {
+          console.log('Prospects clicked!');
+          setActiveSection('prospects');
+        }
       },
       {
         label: "Claims", 
         href: "#",
         leftSection: <ShieldCheck color={activeSection === 'claims' ? colors["brand-red"] : undefined} />,
         active: activeSection === 'claims',
-        onClick: () => setActiveSection('claims')
+        onClick: () => {
+          console.log('Claims clicked!');
+          setActiveSection('claims');
+        }
       }
     ];
   };
 
   const renderMainContent = () => {
+    console.log('Rendering content for section:', activeSection);
+    
     switch (activeSection) {
       case 'prospects':
         return <ProspectsSection />;
@@ -81,8 +101,8 @@ export default function DashboardBase() {
           pressed={isSidebarOpen}
           onPressedChange={handleSidebarToggle}
         />
-        <Header.Logo src={HLIInspireLogo.src} className="!w-[150px]" />
-        <div className="flex items-center justify-end gap-3 w-full">
+        <Header.Logo src={HLIInspireLogo.src} className="w-[200px]" />
+        <div className="flex items-center justify-between gap-3 w-full">
           <div className="text-right">
             <Text size="sm" fontWeight="bold">
               {user?.name || 'Shivam Mishra'}
@@ -115,7 +135,7 @@ export default function DashboardBase() {
         <main
           style={
             {
-              "--left-sidebar-width": isSidebarOpen ? "240px" : "760px",
+              "--left-sidebar-width": isSidebarOpen ? "240px" : "76px",
             } as React.CSSProperties
           }
           className={clsx(
@@ -125,7 +145,14 @@ export default function DashboardBase() {
             "overflow-x-hidden"
           )}
         >
-          {renderMainContent()}
+          <div className="min-h-[200px]">
+            {/* Debug info */}
+            <div className="bg-yellow-100 p-2 mb-4 text-xs">
+              DEBUG: Active Section = {activeSection} | User Role = {user?.role}
+            </div>
+            
+            {renderMainContent()}
+          </div>
         </main>
       </div>
       
