@@ -1,4 +1,5 @@
 // src/contexts/ClaimsContext.tsx
+"use client";
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
 
@@ -13,6 +14,13 @@ type ClaimsContextType = {
   fetchClaims: (opts?: { status?: string; userOnly?: boolean }) => Promise<void>;
   createClaim: (payload: any) => Promise<any>;
   decisionOnClaim: (id: number, decision: 'Approved'|'Rejected', note?: string) => Promise<any>;
+  raiseClaim: (claimData: {
+    policyId: number;
+    claimAmount: number;
+    aadharSubmitted: boolean;
+    panSubmitted: boolean;
+    deathCertificateSubmitted: boolean;
+  }) => Promise<void>;
 };
 
 const ClaimsContext = createContext<ClaimsContextType | undefined>(undefined);
@@ -73,7 +81,7 @@ export const ClaimsProvider: React.FC<{children: React.ReactNode}> = ({ children
   }, []);
 
   return (
-    <ClaimsContext.Provider value={{ customers, claims, loading, fetchCustomers, fetchClaims, createClaim, decisionOnClaim }}>
+    <ClaimsContext.Provider value={{ customers, claims, loading, fetchCustomers, fetchClaims, createClaim, decisionOnClaim, raiseClaim: createClaim }}>
       {children}
     </ClaimsContext.Provider>
   );

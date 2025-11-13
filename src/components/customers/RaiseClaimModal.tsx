@@ -1,81 +1,175 @@
-// src/components/customers/RaiseClaimModal.tsx
-import React, { useState } from 'react';
-import useClaims from '../../hooks/useClaims';
+"use client";
 
-export default function RaiseClaimModal({ customer, onClose }: { customer: any, onClose: () => void }) {
-  const { createClaim } = useClaims();
+import React, { useState } from 'react';
+import {
+  Dialog,
+  Card,
+  Text,
+  Caption,
+  Checkbox,
+  TextField,
+  Button,
+  Flex,
+  Heading
+} from "@hdfclife-insurance/one-x-ui";
+import { useClaimsContext as useClaims } from '../../contexts/ClaimsContext';
+
+type Customer = {
+  policyId: number;
+  policyNumber: string;
+  holderName: string;
+  coverageAmount: number;
+  email: string;
+  phone: string;
+  active: boolean;
+  createdDate: string;
+};
+
+interface RaiseClaimModalProps {
+  customer: Customer;
+  onClose: () => void;
+}
+
+export default function RaiseClaimModal({ customer, onClose }: RaiseClaimModalProps) {
+  const { raiseClaim } = useClaims();
   const [amount, setAmount] = useState('');
   const [aadhar, setAadhar] = useState(false);
   const [pan, setPan] = useState(false);
   const [deathCert, setDeathCert] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      alert('Please enter a valid claim amount');
+      return;
+    }
+
+    if (!aadhar && !pan && !deathCert) {
+      alert('Please select at least one document');
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload = {
+      // TODO: Replace with actual API call
+      await raiseClaim({
         policyId: customer.policyId,
-        policyNumber: customer.policyNumber,
-        claimantName: customer.holderName,
-        claimAmount: Number(amount),
+        claimAmount: parseFloat(amount),
         aadharSubmitted: aadhar,
         panSubmitted: pan,
-        deathCertificateSubmitted: deathCert,
-        // if backend expects 'yes'/'no' for documents:
-        documents: {
-          aadhar: aadhar ? 'yes' : 'no',
-          pan: pan ? 'yes' : 'no',
-          deathCertificate: deathCert ? 'yes' : 'no'
-        }
-      };
-      await createClaim(payload);
-      // success -> close
+        deathCertificateSubmitted: deathCert
+      });
       onClose();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit claim (see console).');
+    } catch (error) {
+      console.error('Error raising claim:', error);
+      alert('Failed to raise claim. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded max-w-lg w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Raise Claim for {customer.holderName}</h3>
-          <button onClick={onClose} className="text-gray-600">✕</button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label>Policy No</label>
-            <div className="text-sm text-gray-700">{customer.policyNumber}</div>
-          </div>
-
-          <div className="mb-3">
-            <label className="block">Claim Amount</label>
-            <input value={amount} onChange={e => setAmount(e.target.value)} required className="border p-2 w-full" type="number" />
-          </div>
-
-          <div className="mb-3">
-            <label className="block font-medium">Documents</label>
-            <div className="flex gap-4 mt-2">
-              <label><input type="checkbox" checked={aadhar} onChange={e => setAadhar(e.target.checked)} /> Aadhar</label>
-              <label><input type="checkbox" checked={pan} onChange={e => setPan(e.target.checked)} /> PAN</label>
-              <label><input type="checkbox" checked={deathCert} onChange={e => setDeathCert(e.target.checked)} /> Death Certificate</label>
+    <Dialog
+      size="md"
+      padding="lg"
+      open={true}
+      onOpenChange={(details) => !details.open && onClose()}
+      title="Raise Insurance Claim"
+      description={`Submit a new claim for policy ${customer.policyNumber}`}
+      withFooter
+      onCancel={onClose}
+      onConfirm={handleSubmit}
+      labels={{
+        cancel: "Cancel",
+        confirm: loading ? "Submitting..." : "Submit Claim"
+      }}
+      confirmButtonProps={{}}
+    >
+      <div className="space-y-6">
+        {/* Customer Information Card */}
+        <Card>
+          <Flex align="center" justify="space-between" className="mb-4">
+            <div>
+              <Text fontWeight="bold" size="lg">{customer.holderName}</Text>
+              <Caption>Policy Holder</Caption>
             </div>
-          </div>
+          </Flex>
+          
+          <Card.Section className="bg-blue-50">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Policy Number</Caption>
+                <Text className="text-gray-900" fontWeight="medium">
+                  {customer.policyNumber}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Coverage Amount</Caption>
+                <Text className="text-primary-blue" fontWeight="medium">
+                  ₹{customer.coverageAmount.toLocaleString()}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Email</Caption>
+                <Text className="text-gray-900" fontWeight="medium">
+                  {customer.email}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Phone</Caption>
+                <Text className="text-gray-900" fontWeight="medium">
+                  {customer.phone}
+                </Text>
+              </div>
+            </div>
+          </Card.Section>
+        </Card>
 
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-3 py-1 border rounded">Cancel</button>
-            <button type="submit" disabled={loading} className="px-4 py-1 bg-blue-600 text-white rounded">
-              {loading ? 'Submitting...' : 'Submit'}
-            </button>
+        {/* Claim Details */}
+        <Card>
+          <Heading as="h4" fontWeight="semibold" className="mb-4">
+            Claim Details
+          </Heading>
+          
+          <TextField
+            label="Claim Amount (₹)"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Enter claim amount"
+            required
+            className="mb-4"
+          />
+        </Card>
+
+        {/* Document Submission */}
+        <Card>
+          <Heading as="h4" fontWeight="semibold" className="mb-4">
+            Document Submission
+          </Heading>
+          <Caption className="text-gray-600 mb-4">
+            Please confirm which documents you have submitted with this claim
+          </Caption>
+          
+          <div className="space-y-3">
+            <Checkbox
+              label="Aadhar Card"
+              checked={aadhar}
+              onCheckedChange={(details) => setAadhar(!!details.checked)}
+            />
+            <Checkbox
+              label="PAN Card"
+              checked={pan}
+              onCheckedChange={(details) => setPan(!!details.checked)}
+            />
+            <Checkbox
+              label="Death Certificate"
+              checked={deathCert}
+              onCheckedChange={(details) => setDeathCert(!!details.checked)}
+            />
           </div>
-        </form>
+        </Card>
       </div>
-    </div>
+    </Dialog>
   );
 }

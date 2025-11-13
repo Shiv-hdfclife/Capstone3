@@ -6,8 +6,8 @@ import {
   Table,
   Flex,
   IconButton,
-  Checkbox,
-  Pagination
+  Pagination,
+  Badge
 } from "@hdfclife-insurance/one-x-ui";
 import {
   ArrowDown,
@@ -25,63 +25,85 @@ import {
   PaginationState
 } from "@tanstack/react-table";
 import { useClaimsContext } from '../../contexts/ClaimsContext';
-import RaiseClaimModal from './RaiseClaimModal';
+import ClaimViewModal from './ClaimViewModal';
 
-type Customer = {
-  policyId: number;
+type Claim = {
+  claimId: number;
   policyNumber: string;
-  holderName: string;
-  coverageAmount: number;
-  email: string;
-  phone: string;
-  active: boolean;
+  claimantName: string;
+  claimAmount: number;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  aadharSubmitted: boolean;
+  panSubmitted: boolean;
+  deathCertificateSubmitted: boolean;
   createdDate: string;
+  adminNote?: string;
 };
 
-export default function CustomersTable() {
-  const { customers } = useClaimsContext();
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+type Props = {
+  status?: string;
+  userRole: 'user' | 'admin';
+};
+
+export default function ClaimsTable({ status, userRole }: Props) {
+  const { claims } = useClaimsContext();
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
 
-  const columnHelper = createColumnHelper<Customer>();
+  const filteredClaims = useMemo(() => {
+    if (!status || status === 'All') return claims;
+    return claims.filter((claim: Claim) => 
+      claim.status.toLowerCase() === status.toLowerCase()
+    );
+  }, [claims, status]);
+
+  const columnHelper = createColumnHelper<Claim>();
 
   const columns = useMemo(() => [
+    columnHelper.accessor("claimId", {
+      header: "Claim ID",
+      cell: (info) => `#${info.getValue()}`,
+      enableSorting: true,
+    }),
     columnHelper.accessor("policyNumber", {
-      header: "Policy No",
+      header: "Policy Number",
       cell: (info) => info.getValue(),
       enableSorting: true,
     }),
-    columnHelper.accessor("holderName", {
-      header: "Customer Name",
+    columnHelper.accessor("claimantName", {
+      header: "Claimant Name",
       cell: (info) => info.getValue(),
       enableSorting: true,
     }),
-    columnHelper.accessor("coverageAmount", {
-      header: "Coverage Amount",
+    columnHelper.accessor("claimAmount", {
+      header: "Claim Amount",
       cell: (info) => `₹${info.getValue().toLocaleString()}`,
       enableSorting: true,
     }),
-    columnHelper.accessor("email", {
-      header: "Email",
-      cell: (info) => info.getValue(),
-      enableSorting: false,
-    }),
-    columnHelper.accessor("phone", {
-      header: "Phone",
-      cell: (info) => info.getValue(),
-      enableSorting: false,
-    }),
-    columnHelper.accessor("active", {
+    columnHelper.accessor("status", {
       header: "Status",
-      cell: (info) => (
-        <span className={info.getValue() ? "text-green-600" : "text-red-600"}>
-          {info.getValue() ? "Active" : "Inactive"}
-        </span>
-      ),
+      cell: (info) => {
+        const status = info.getValue();
+        const colorMap: Record<string, "primary" | "gray" | "blue" | "green"> = {
+          Pending: 'primary',
+          Approved: 'green',
+          Rejected: 'gray'
+        };
+        return (
+          <Badge color={colorMap[status] || 'gray'}>
+            {status}
+          </Badge>
+        );
+      },
+      enableSorting: true,
+    }),
+    columnHelper.accessor("createdDate", {
+      header: "Created Date",
+      cell: (info) => new Date(info.getValue()).toLocaleDateString(),
       enableSorting: true,
     }),
     {
@@ -91,18 +113,17 @@ export default function CustomersTable() {
       cell: ({ row }: any) => (
         <Button 
           size="xs" 
-          variant="primary"
-          color="primary"
-          onClick={() => setSelectedCustomer(row.original)}
+          variant="link"
+          onClick={() => setSelectedClaim(row.original)}
         >
-          Raise Claim
+          View
         </Button>
       ),
     },
   ], []);
 
   const table = useReactTable({
-    data: customers,
+    data: filteredClaims,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -172,7 +193,7 @@ export default function CustomersTable() {
 
       <Flex justify="flex-end">
         <Pagination
-          count={customers.length}
+          count={filteredClaims.length}
           onPrevious={() => table.previousPage()}
           onNext={() => table.nextPage()}
           pageSize={pagination.pageSize}
@@ -180,10 +201,11 @@ export default function CustomersTable() {
         />
       </Flex>
 
-      {selectedCustomer && (
-        <RaiseClaimModal
-          customer={selectedCustomer}
-          onClose={() => setSelectedCustomer(null)}
+      {selectedClaim && (
+        <ClaimViewModal
+          claim={selectedClaim}
+          userRole={userRole}
+          onClose={() => setSelectedClaim(null)}
         />
       )}
     </div>

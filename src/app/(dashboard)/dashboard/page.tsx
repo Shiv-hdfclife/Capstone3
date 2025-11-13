@@ -1,8 +1,6 @@
-//  protected pages for user/admin
 "use client";
 
 import {
-  Avatar,
   Caption,
   CollapsibleSidebar,
   Header,
@@ -10,35 +8,74 @@ import {
   colors,
 } from "@hdfclife-insurance/one-x-ui";
 import {
-  Copy,
-  Gear,
-  Handshake,
-  House,
-  Layout,
   ShieldCheck,
-  TrendUp,
-  UserGear,
   Users,
 } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { useCallback, useState } from "react";
+import { useAuth } from "../../../contexts/AuthContext";
 import HLIInspireLogo from "../../../assets/HDFC_Life_Logo.svg";
+import ProspectsSection from "../../../components/prospects/ProspectsSection";
+import ClaimsSection from "../../../components/claims/ClaimsSection";
+import RoleSwitcher from "../../../roleSwitch/roleSwitcher";
 
 export default function DashboardBase() {
-  // Single state for sidebar toggle
+  const { user } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(user?.role === 'admin' ? 'claims' : 'prospects');
 
-  // Memoized toggle handler
   const handleSidebarToggle = useCallback((pressed: boolean) => {
     setSidebarOpen(pressed);
   }, []);
 
+  const getSidebarItems = () => {
+    if (user?.role === 'admin') {
+      return [
+        {
+          label: "Claims",
+          href: "#",
+          leftSection: <ShieldCheck color={colors["brand-red"]} />,
+          active: activeSection === 'claims',
+          onClick: () => setActiveSection('claims')
+        }
+      ];
+    }
+    
+    return [
+      {
+        label: "Prospects",
+        href: "#",
+        leftSection: <Users color={activeSection === 'prospects' ? colors["brand-red"] : undefined} />,
+        active: activeSection === 'prospects',
+        onClick: () => setActiveSection('prospects')
+      },
+      {
+        label: "Claims", 
+        href: "#",
+        leftSection: <ShieldCheck color={activeSection === 'claims' ? colors["brand-red"] : undefined} />,
+        active: activeSection === 'claims',
+        onClick: () => setActiveSection('claims')
+      }
+    ];
+  };
+
+  const renderMainContent = () => {
+    switch (activeSection) {
+      case 'prospects':
+        return <ProspectsSection />;
+      case 'claims':
+        return <ClaimsSection userRole={user?.role || 'user'} />;
+      default:
+        return <ProspectsSection />;
+    }
+  };
+
   return (
-    <div className="min-h-dvh flex flex-col bg-gray-100 [--gutter:24px] [--header-height:68px]">
+    <div className="min-h-dvh flex flex-col bg-gray-100 [--left-sidebar-width:240px] [--gutter:24px] [--header-height:68px]">
       {/* Header Section */}
       <Header
         fixed
-        className="border-0 border-b border-solid border-indigo-200 gap-5"
+        className="border-0 border-b border-solid border-indigo-200"
       >
         <Header.Hamburger
           pressed={isSidebarOpen}
@@ -46,98 +83,54 @@ export default function DashboardBase() {
         />
         <Header.Logo src={HLIInspireLogo.src} className="!w-[150px]" />
         <div className="flex items-center justify-end gap-3 w-full">
-          <div className="text-right hidden lg:block">
-            <Text size="sm" fontWeight="bold" >
-              Shivam Mishra
+          <div className="text-right">
+            <Text size="sm" fontWeight="bold">
+              {user?.name || 'Shivam Mishra'}
             </Text>
-            <Text size="sm">Key Account Manager</Text>
+            <Text size="sm">{user?.role === 'admin' ? 'Administrator' : 'Key Account Manager'}</Text>
             <Caption className="italic">
               Last login : 03/09/2024 12:21 pm
             </Caption>
           </div>
-          {/* <Avatar variant="outline" src={AvatarImage.src} /> */}
         </div>
       </Header>
 
       <div className="lg:flex flex-1">
-        {/* Sidebar - Hidden on mobile, flexible width on desktop */}
+        {/* Sidebar - Full Height Coverage */}
         <aside
           style={
             {
               "--left-sidebar-width": isSidebarOpen ? "240px" : "76px",
             } as React.CSSProperties
           }
-          className="hidden lg:flex z-[1] flex-col fixed transition-all bottom-0 top-0 pt-[var(--header-height)] left-0"
+          className="hidden lg:flex flex-col fixed transition-all duration-300 ease-in-out bottom-0 top-0 pt-[var(--header-height)] left-0 z-[1]"
         >
           <CollapsibleSidebar
             collapsed={!isSidebarOpen}
-            items={[
-              {
-                label: "Dashboard",
-                href: "#",
-                leftSection: <House color={colors["brand-red"]} />,
-                active: true,
-              },
-              {
-                label: "New business",
-                href: "#",
-                leftSection: <Users />,
-              },
-              {
-                label: "Claims",
-                href: "#",
-                leftSection: <ShieldCheck />,
-              },
-              {
-                label: "Services",
-                href: "#",
-                leftSection: <Layout />,
-              },
-              {
-                label: "Prospects",
-                href: "#",
-                leftSection: <UserGear />,
-              },
-              {
-                label: "Partner",
-                href: "#",
-                leftSection: <Handshake />,
-              },
-              {
-                label: "Loaders",
-                href: "#",
-                leftSection: <Copy />,
-              },
-              {
-                label: "Reports",
-                href: "#",
-                leftSection: <TrendUp />,
-              },
-              {
-                label: "Settings",
-                href: "#",
-                leftSection: <Gear />,
-              },
-            ]}
+            items={getSidebarItems()}
           />
         </aside>
 
-        {/* Main Content Area - Responsive padding based on sidebar state */}
+        {/* Main Content Area */}
         <main
           style={
             {
-              "--left-sidebar-width": isSidebarOpen ? "240px" : "76px",
+              "--left-sidebar-width": isSidebarOpen ? "240px" : "760px",
             } as React.CSSProperties
           }
           className={clsx(
             "flex-1 px-4 lg:px-0 pb-[var(--gutter)] pt-[calc(var(--header-height)+var(--gutter))]",
             "lg:pl-[calc(var(--gutter)+var(--left-sidebar-width))]",
-            "lg:pr-[var(--gutter)] duration-[0] transition-[padding]",
+            "lg:pr-[var(--gutter)] duration-300 ease-in-out transition-[padding]",
+            "overflow-x-hidden"
           )}
         >
-          {/* Add your main content here */}
+          {renderMainContent()}
         </main>
       </div>
+      
+      {/* Role Switcher for Testing */}
+      <RoleSwitcher />
     </div>
   );
 }

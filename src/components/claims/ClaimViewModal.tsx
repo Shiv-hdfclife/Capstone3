@@ -1,76 +1,241 @@
-// src/components/claims/ClaimViewModal.tsx
-import React, { useState } from 'react';
-import useClaims from '../../hooks/useClaims';
+"use client";
 
-// TODO: replace isAdmin check with AuthContext
-function useAuthStub() {
-  // TODO: read real role from AuthContext
-  return { isAdmin: true }; // for testing as admin; change to false to test user view
+import React, { useState } from 'react';
+import {
+  Dialog,
+  Card,
+  Text,
+  Caption,
+  Checkbox,
+  TextField,
+  Button,
+  Flex,
+  Heading,
+  Badge,
+  TextArea
+} from "@hdfclife-insurance/one-x-ui";
+import { useClaimsContext as useClaims } from '../../contexts/ClaimsContext';
+
+type Claim = {
+  claimId: number;
+  policyNumber: string;
+  claimantName: string;
+  claimAmount: number;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  aadharSubmitted: boolean;
+  panSubmitted: boolean;
+  deathCertificateSubmitted: boolean;
+  createdDate: string;
+  adminNote?: string;
+};
+
+interface ClaimViewModalProps {
+  claim: Claim;
+  userRole: 'user' | 'admin';
+  onClose: () => void;
 }
 
-export default function ClaimViewModal({ claim, onClose }: { claim: any, onClose: () => void }) {
+export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewModalProps) {
   const { decisionOnClaim } = useClaims();
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState('');
-  const { isAdmin } = useAuthStub();
 
-  // compute missing docs for rejection message
+  // Compute missing docs for rejection message
   const missingDocs: string[] = [];
-  if (!claim.aadharSubmitted) missingDocs.push('Aadhar');
-  if (!claim.panSubmitted) missingDocs.push('PAN');
+  if (!claim.aadharSubmitted) missingDocs.push('Aadhar Card');
+  if (!claim.panSubmitted) missingDocs.push('PAN Card');
   if (!claim.deathCertificateSubmitted) missingDocs.push('Death Certificate');
 
-  async function handleDecision(decision: 'Approved'|'Rejected') {
+  const handleDecision = async (decision: 'Approved' | 'Rejected') => {
+    if (decision === 'Rejected' && missingDocs.length > 0 && !note) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+
     setLoading(true);
     try {
-      const noteToSend = decision === 'Rejected' ? `Missing: ${missingDocs.join(', ')}` : note;
-      await decisionOnClaim(claim.claimId, decision, noteToSend);
+      // TODO: Replace with actual API call
+      await decisionOnClaim(
+        claim.claimId,
+        decision,
+        decision === 'Rejected' 
+          ? note || `Missing documents: ${missingDocs.join(', ')}`
+          : note
+      );
       onClose();
-    } catch (e) {
-      console.error(e);
-      alert('Failed to send decision');
+    } catch (error) {
+      console.error('Error processing claim decision:', error);
+      alert('Failed to process decision. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const getStatusColor = (status: string): "primary" | "gray" | "green" | "blue" => {
+    switch (status) {
+      case 'Pending': return 'primary';
+      case 'Approved': return 'green';
+      case 'Rejected': return 'gray';
+      default: return 'gray';
+    }
+  };
+
+  const isAdmin = userRole === 'admin';
+  const isPending = claim.status === 'Pending';
+  const canTakeAction = isAdmin && isPending;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded max-w-md w-full">
-        <div className="flex justify-between items-center mb-3">
-          <h4 className="font-semibold">Claim #{claim.claimId}</h4>
-          <button onClick={onClose}>✕</button>
-        </div>
+    <Dialog
+      size="md"
+      padding="lg"
+      open={true}
+      onOpenChange={(details) => !details.open && onClose()}
+      title={`Claim Details #${claim.claimId}`}
+      description={`View and manage insurance claim for policy ${claim.policyNumber}`}
+      withFooter={canTakeAction}
+      onCancel={canTakeAction ? onClose : undefined}
+      labels={{
+        cancel: "Close"
+      }}
+    >
+      <div className="space-y-6">
+        {/* Claim Information Card */}
+        <Card>
+          <Flex align="center" justify="space-between" className="mb-4">
+            <div>
+              <Text fontWeight="bold" size="lg">{claim.claimantName}</Text>
+              <Caption>Claimant</Caption>
+            </div>
+            <Badge color={getStatusColor(claim.status)}>
+              {claim.status}
+            </Badge>
+          </Flex>
+          
+          <Card.Section className="bg-blue-50">
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Policy Number</Caption>
+                <Text className="text-gray-900" fontWeight="medium">
+                  {claim.policyNumber}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Claim Amount</Caption>
+                <Text className="text-primary-blue" fontWeight="medium">
+                  ₹{claim.claimAmount.toLocaleString()}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Submitted Date</Caption>
+                <Text className="text-gray-900" fontWeight="medium">
+                  {new Date(claim.createdDate).toLocaleDateString()}
+                </Text>
+              </div>
+              <div className="space-y-1">
+                <Caption className="text-gray-800 text-sm">Status</Caption>
+                <Badge color={getStatusColor(claim.status)}>
+                  {claim.status}
+                </Badge>
+              </div>
+            </div>
+          </Card.Section>
+        </Card>
 
-        <div className="mb-2">
-          <div><strong>Policy:</strong> {claim.policyNumber}</div>
-          <div><strong>Claimant:</strong> {claim.claimantName}</div>
-          <div><strong>Amount:</strong> {claim.claimAmount}</div>
-          <div><strong>Status:</strong> {claim.status}</div>
-        </div>
-
-        <div className="mb-3">
-          <strong>Documents submitted</strong>
-          <div className="mt-2">
-            <div><input type="checkbox" checked={!!claim.aadharSubmitted} readOnly /> Aadhar</div>
-            <div><input type="checkbox" checked={!!claim.panSubmitted} readOnly /> PAN</div>
-            <div><input type="checkbox" checked={!!claim.deathCertificateSubmitted} readOnly /> Death Certificate</div>
+        {/* Document Verification */}
+        <Card>
+          <Heading as="h3" fontWeight="semibold" className="mb-4">
+            Document Verification
+          </Heading>
+          
+          <div className="space-y-3">
+            <Flex align="center" gap={3}>
+              <Checkbox
+                checked={claim.aadharSubmitted}
+                readOnly
+              />
+              <Text color={claim.aadharSubmitted ? "green" : "red"}>
+                Aadhar Card {claim.aadharSubmitted ? "✓ Submitted" : "✗ Missing"}
+              </Text>
+            </Flex>
+            
+            <Flex align="center" gap={3}>
+              <Checkbox
+                checked={claim.panSubmitted}
+                readOnly
+              />
+              <Text color={claim.panSubmitted ? "green" : "red"}>
+                PAN Card {claim.panSubmitted ? "✓ Submitted" : "✗ Missing"}
+              </Text>
+            </Flex>
+            
+            <Flex align="center" gap={3}>
+              <Checkbox
+                checked={claim.deathCertificateSubmitted}
+                readOnly
+              />
+              <Text color={claim.deathCertificateSubmitted ? "green" : "red"}>
+                Death Certificate {claim.deathCertificateSubmitted ? "✓ Submitted" : "✗ Missing"}
+              </Text>
+            </Flex>
           </div>
-        </div>
 
-        {claim.status === 'Rejected' && <div className="bg-red-100 p-2 mb-3">Reject note: {claim.adminNote}</div>}
-
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-1 border rounded">Close</button>
-
-          {isAdmin && claim.status === 'Pending' && (
-            <>
-              <button disabled={loading} onClick={() => handleDecision('Rejected')} className="px-3 py-1 bg-red-600 text-white rounded">Reject</button>
-              <button disabled={loading} onClick={() => handleDecision('Approved')} className="px-3 py-1 bg-green-600 text-white rounded">Approve</button>
-            </>
+          {missingDocs.length > 0 && (
+            <Card.Section className="bg-red-50 mt-4">
+              <Text color="red" fontWeight="medium">
+                Missing Documents: {missingDocs.join(', ')}
+              </Text>
+            </Card.Section>
           )}
-        </div>
+        </Card>
+
+        {/* Admin Actions */}
+        {canTakeAction && (
+          <Card>
+            <Heading as="h3" fontWeight="semibold" className="mb-4">
+              Administrative Action
+            </Heading>
+            
+            <TextArea
+              label="Notes (Optional)"
+              placeholder="Add any notes or reason for decision..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="mb-4"
+            />
+            
+            <Flex gap={3} justify="flex-end">
+              <Button
+                variant="secondary"
+                color="gray"
+                onClick={() => handleDecision('Rejected')}
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : 'Reject Claim'}
+              </Button>
+              <Button
+                variant="primary"
+                color="primary"
+                onClick={() => handleDecision('Approved')}
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : 'Approve Claim'}
+              </Button>
+            </Flex>
+          </Card>
+        )}
+
+        {/* Show admin note if claim is rejected */}
+        {claim.status === 'Rejected' && claim.adminNote && (
+          <Card>
+            <Card.Section className="bg-red-50">
+              <Heading as="h4" fontWeight="medium" className="mb-2 text-red-800">
+                Rejection Reason
+              </Heading>
+              <Text color="red">{claim.adminNote}</Text>
+            </Card.Section>
+          </Card>
+        )}
       </div>
-    </div>
+    </Dialog>
   );
 }
