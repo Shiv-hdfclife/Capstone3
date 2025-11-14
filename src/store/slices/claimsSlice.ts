@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../services/api';
+import api from '../../app/api/prospects/get_Customer/api';
+import { postClaim, CreateClaimRequest } from "../../services/post_claim";
+
 
 export interface Claim {
   claimId: number;
@@ -37,17 +39,9 @@ export const fetchClaims = createAsyncThunk(
 );
 
 export const createClaim = createAsyncThunk(
-  'claims/createClaim',
-  async (claimData: {
-    policyId: number;
-    policyNumber: string;
-    claimantName: string;
-    claimAmount: number;
-    aadharSubmitted: boolean;
-    panSubmitted: boolean;
-    deathCertificateSubmitted: boolean;
-  }) => {
-    const response = await api.createClaim(claimData);
+  "claims/createClaim",
+  async (data: CreateClaimRequest) => {
+    const response = await postClaim(data);
     return response;
   }
 );
