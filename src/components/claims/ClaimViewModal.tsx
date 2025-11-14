@@ -1,3 +1,221 @@
+// "use client";
+
+// import React, { useState } from 'react';
+// import {
+//   Dialog,
+//   Card,
+//   Text,
+//   Caption,
+//   Checkbox,
+//   Button,
+//   Flex,
+//   Heading,
+//   Badge,
+//   TextArea
+// } from "@hdfclife-insurance/one-x-ui";
+// import { useAppDispatch } from '../../store/hooks';
+// import { updateClaimStatus } from '../../store/slices/claimsSlice';
+// import { Claim } from '../../store/slices/claimsSlice';
+
+// interface ClaimViewModalProps {
+//   claim: Claim;
+//   userRole: 'user' | 'admin';
+//   onClose: () => void;
+// }
+
+// export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewModalProps) {
+//   const dispatch = useAppDispatch();
+//   const [loading, setLoading] = useState(false);
+//   const [note, setNote] = useState('');
+
+//   // Compute missing docs for rejection message
+//   const missingDocs: string[] = [];
+//   if (!claim.aadharSubmitted) missingDocs.push('Aadhar Card');
+//   if (!claim.panSubmitted) missingDocs.push('PAN Card');
+//   if (!claim.deathCertificateSubmitted) missingDocs.push('Death Certificate');
+
+//   const handleDecision = async (decision: 'Approved' | 'Rejected') => {
+//     if (decision === 'Rejected' && missingDocs.length > 0 && !note) {
+//       alert('Please provide a reason for rejection');
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       await dispatch(updateClaimStatus({
+//         claimId: claim.claimId,
+//         status: decision,
+//         adminNote: decision === 'Rejected'
+//           ? note || `Missing documents: ${missingDocs.join(', ')}`
+//           : note
+//       })).unwrap();
+//       onClose();
+//     } catch (error) {
+//       console.error('Error processing claim decision:', error);
+//       alert('Failed to process decision. Please try again.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const getStatusColor = (status: string): "primary" | "gray" | "green" | "blue" => {
+//     switch (status) {
+//       case 'Pending': return 'primary';
+//       case 'Approved': return 'green';
+//       case 'Rejected': return 'gray';
+//       default: return 'gray';
+//     }
+//   };
+
+//   const isAdmin = userRole === 'admin';
+//   const isPending = claim.status === 'Pending';
+//   const canTakeAction = isAdmin && isPending;
+
+//   return (
+//     <Dialog
+//       size="md"
+//       padding="lg"
+//       open={true}
+//       onOpenChange={(details) => !details.open && onClose()}
+//       title={`Claim Details #${claim.claimId}`}
+//       description={`View and manage insurance claim for policy ${claim.policyNumber}`}
+//       withFooter={canTakeAction}
+//       onCancel={canTakeAction ? onClose : undefined}
+//       labels={{
+//         cancel: "Close"
+//       }}
+//     >
+//       <div className="space-y-6">
+//         {/* Claim Information Card */}
+//         <Card>
+//           <Flex align="center" justify="space-between" className="mb-4">
+//             <Badge color={getStatusColor(claim.status)}>
+//               {claim.status}
+//             </Badge>
+//           </Flex>
+
+//           <Card.Section className="bg-blue-50">
+//             <div className="grid lg:grid-cols-2 gap-4">
+//               <div className="space-y-1">
+//                 <Caption className="text-gray-800 text-sm">Policy Number</Caption>
+//                 <Text className="text-gray-900" fontWeight="medium">
+//                   {claim.policyNumber}
+//                 </Text>
+//               </div>
+//               <div className="space-y-1">
+//                 <Caption className="text-gray-800 text-sm">Claim Amount</Caption>
+//                 <Text className="text-primary-blue" fontWeight="medium">
+//                   ₹{claim.claimAmount.toLocaleString()}
+//                 </Text>
+//               </div>
+//               {claim.claimantName && (
+//                 <div className="space-y-1">
+//                   <Caption className="text-gray-800 text-sm">Claimant Name</Caption>
+//                   <Text className="text-gray-900" fontWeight="medium">
+//                     {claim.claimantName}
+//                   </Text>
+//                 </div>
+//               )}
+//               <div className="space-y-1">
+//                 <Caption className="text-gray-800 text-sm">Status</Caption>
+//                 <Badge color={getStatusColor(claim.status)}>
+//                   {claim.status}
+//                 </Badge>
+//               </div>
+//             </div>
+//           </Card.Section>
+//         </Card>
+
+//         {/* Document Verification */}
+//         <Card>
+//           <Heading as="h3" fontWeight="semibold" className="mb-4">
+//             Document Verification
+//           </Heading>
+
+//           <div className="space-y-3">
+//             <Flex align="center" gap={3}>
+//               <Checkbox
+//                 checked={claim.aadharSubmitted}
+//                 readOnly
+//               />
+//               <Text color={claim.aadharSubmitted ? "green" : "red"}>
+//                 Aadhar Card {claim.aadharSubmitted ? "✓ Submitted" : "✗ Missing"}
+//               </Text>
+//             </Flex>
+
+//             <Flex align="center" gap={3}>
+//               <Checkbox
+//                 checked={claim.panSubmitted}
+//                 readOnly
+//               />
+//               <Text color={claim.panSubmitted ? "green" : "red"}>
+//                 PAN Card {claim.panSubmitted ? "✓ Submitted" : "✗ Missing"}
+//               </Text>
+//             </Flex>
+
+//             <Flex align="center" gap={3}>
+//               <Checkbox
+//                 checked={claim.deathCertificateSubmitted}
+//                 readOnly
+//               />
+//               <Text color={claim.deathCertificateSubmitted ? "green" : "red"}>
+//                 Death Certificate {claim.deathCertificateSubmitted ? "✓ Submitted" : "✗ Missing"}
+//               </Text>
+//             </Flex>
+//           </div>
+
+//           {missingDocs.length > 0 && (
+//             <Card.Section className="bg-red-50 mt-4">
+//               <Text color="red" fontWeight="medium">
+//                 Missing Documents: {missingDocs.join(', ')}
+//               </Text>
+//             </Card.Section>
+//           )}
+//         </Card>
+
+//         {/* Admin Actions */}
+//         {canTakeAction && (
+//           <Card>
+//             <Heading as="h3" fontWeight="semibold" className="mb-4">
+//               Administrative Action
+//             </Heading>
+
+//             <TextArea
+//               label="Notes (Optional)"
+//               placeholder="Add any notes or reason for decision..."
+//               value={note}
+//               onChange={(e) => setNote(e.target.value)}
+//               className="mb-4"
+//             />
+
+//             <Flex gap={3} justify="flex-end">
+//               <Button
+//                 variant="secondary"
+//                 color="gray"
+//                 onClick={() => handleDecision('Rejected')}
+//                 disabled={loading}
+//               >
+//                 {loading ? 'Processing...' : 'Reject Claim'}
+//               </Button>
+//               <Button
+//                 variant="primary"
+//                 color="primary"
+//                 onClick={() => handleDecision('Approved')}
+//                 disabled={loading}
+//               >
+//                 {loading ? 'Processing...' : 'Approve Claim'}
+//               </Button>
+//             </Flex>
+//           </Card>
+//         )}
+
+
+//       </div>
+//     </Dialog>
+//   );
+// }
+
+
 "use client";
 
 import React, { useState } from 'react';
@@ -15,19 +233,7 @@ import {
 } from "@hdfclife-insurance/one-x-ui";
 import { useAppDispatch } from '../../store/hooks';
 import { updateClaimStatus } from '../../store/slices/claimsSlice';
-
-type Claim = {
-  claimId: number;
-  policyNumber: string;
-  claimantName: string;
-  claimAmount: number;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  aadharSubmitted: boolean;
-  panSubmitted: boolean;
-  deathCertificateSubmitted: boolean;
-  createdDate: string;
-  adminNote?: string;
-};
+import { Claim } from '../../store/slices/claimsSlice';
 
 interface ClaimViewModalProps {
   claim: Claim;
@@ -40,7 +246,6 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState('');
 
-  // Compute missing docs for rejection message
   const missingDocs: string[] = [];
   if (!claim.aadharSubmitted) missingDocs.push('Aadhar Card');
   if (!claim.panSubmitted) missingDocs.push('PAN Card');
@@ -57,10 +262,11 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
       await dispatch(updateClaimStatus({
         claimId: claim.claimId,
         status: decision,
-        adminNote: decision === 'Rejected' 
+        adminNote: decision === 'Rejected'
           ? note || `Missing documents: ${missingDocs.join(', ')}`
           : note
       })).unwrap();
+      // Do NOT call a parent refresh here — parent manages fetching.
       onClose();
     } catch (error) {
       console.error('Error processing claim decision:', error);
@@ -98,13 +304,8 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
       }}
     >
       <div className="space-y-6">
-        {/* Claim Information Card */}
         <Card>
           <Flex align="center" justify="space-between" className="mb-4">
-            <div>
-              <Text fontWeight="bold" size="lg">{claim.claimantName}</Text>
-              <Caption>Claimant</Caption>
-            </div>
             <Badge color={getStatusColor(claim.status)}>
               {claim.status}
             </Badge>
@@ -124,12 +325,14 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
                   ₹{claim.claimAmount.toLocaleString()}
                 </Text>
               </div>
-              <div className="space-y-1">
-                <Caption className="text-gray-800 text-sm">Submitted Date</Caption>
-                <Text className="text-gray-900" fontWeight="medium">
-                  {new Date(claim.createdDate).toLocaleDateString()}
-                </Text>
-              </div>
+              {claim.claimantName && (
+                <div className="space-y-1">
+                  <Caption className="text-gray-800 text-sm">Claimant Name</Caption>
+                  <Text className="text-gray-900" fontWeight="medium">
+                    {claim.claimantName}
+                  </Text>
+                </div>
+              )}
               <div className="space-y-1">
                 <Caption className="text-gray-800 text-sm">Status</Caption>
                 <Badge color={getStatusColor(claim.status)}>
@@ -140,7 +343,6 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
           </Card.Section>
         </Card>
 
-        {/* Document Verification */}
         <Card>
           <Heading as="h3" fontWeight="semibold" className="mb-4">
             Document Verification
@@ -148,30 +350,21 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
 
           <div className="space-y-3">
             <Flex align="center" gap={3}>
-              <Checkbox
-                checked={claim.aadharSubmitted}
-                readOnly
-              />
+              <Checkbox checked={claim.aadharSubmitted} readOnly />
               <Text color={claim.aadharSubmitted ? "green" : "red"}>
                 Aadhar Card {claim.aadharSubmitted ? "✓ Submitted" : "✗ Missing"}
               </Text>
             </Flex>
 
             <Flex align="center" gap={3}>
-              <Checkbox
-                checked={claim.panSubmitted}
-                readOnly
-              />
+              <Checkbox checked={claim.panSubmitted} readOnly />
               <Text color={claim.panSubmitted ? "green" : "red"}>
                 PAN Card {claim.panSubmitted ? "✓ Submitted" : "✗ Missing"}
               </Text>
             </Flex>
 
             <Flex align="center" gap={3}>
-              <Checkbox
-                checked={claim.deathCertificateSubmitted}
-                readOnly
-              />
+              <Checkbox checked={claim.deathCertificateSubmitted} readOnly />
               <Text color={claim.deathCertificateSubmitted ? "green" : "red"}>
                 Death Certificate {claim.deathCertificateSubmitted ? "✓ Submitted" : "✗ Missing"}
               </Text>
@@ -187,7 +380,6 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
           )}
         </Card>
 
-        {/* Admin Actions */}
         {canTakeAction && (
           <Card>
             <Heading as="h3" fontWeight="semibold" className="mb-4">
@@ -203,35 +395,13 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
             />
 
             <Flex gap={3} justify="flex-end">
-              <Button
-                variant="secondary"
-                color="gray"
-                onClick={() => handleDecision('Rejected')}
-                disabled={loading}
-              >
+              <Button variant="secondary" color="gray" onClick={() => handleDecision('Rejected')} disabled={loading}>
                 {loading ? 'Processing...' : 'Reject Claim'}
               </Button>
-              <Button
-                variant="primary"
-                color="primary"
-                onClick={() => handleDecision('Approved')}
-                disabled={loading}
-              >
+              <Button variant="primary" color="primary" onClick={() => handleDecision('Approved')} disabled={loading}>
                 {loading ? 'Processing...' : 'Approve Claim'}
               </Button>
             </Flex>
-          </Card>
-        )}
-
-        {/* Show admin note if claim is rejected */}
-        {claim.status === 'Rejected' && claim.adminNote && (
-          <Card>
-            <Card.Section className="bg-red-50">
-              <Heading as="h4" fontWeight="medium" className="mb-2 text-red-800">
-                Rejection Reason
-              </Heading>
-              <Text color="red">{claim.adminNote}</Text>
-            </Card.Section>
           </Card>
         )}
       </div>

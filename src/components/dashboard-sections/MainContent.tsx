@@ -13,7 +13,7 @@ export default function MainContent() {
 
     console.log("Current selected section:", selectedSection);
     console.log("ProspectsSection →", ProspectsSection);
-    console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
+console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
 
 
     const renderSection = () => {

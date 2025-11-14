@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../app/api/prospects/get_Customer/api';
+import claimsAPI from '../../app/api/claims/get_Claims/api';
 import { postClaim, CreateClaimRequest } from "../../services/post_claim";
 
 
@@ -32,11 +32,20 @@ const initialState: ClaimsState = {
 // Async thunks
 export const fetchClaims = createAsyncThunk(
   'claims/fetchClaims',
-  async (params: { status?: string; userOnly?: boolean } = {}) => {
-    const response = await api.fetchClaims(params);
+  async (params: { status?: string; userOnly?: boolean; role: string; userId: string }) => {
+
+    // only role & userId used by the API
+    const response = await claimsAPI.fetchClaims(params.role, params.userId);
+
+    // filter on frontend if needed
+    if (params.status) {
+      return response.filter((c: Claim) => c.status === params.status);
+    }
+
     return response;
   }
 );
+
 
 export const createClaim = createAsyncThunk(
   "claims/createClaim",
@@ -53,7 +62,7 @@ export const updateClaimStatus = createAsyncThunk(
     status: string;
     adminNote?: string;
   }) => {
-    const response = await api.decisionOnClaim(params.claimId, {
+    const response = await claimsAPI.decisionOnClaim(params.claimId, {
       decision: params.status,
       note: params.adminNote
     });

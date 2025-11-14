@@ -5,7 +5,7 @@ import { fetchCustomers } from '../store/slices/customersSlice';
 export default function useClaims() {
   const dispatch = useAppDispatch();
   const claims = useAppSelector(state => state.claims.claims);
-  const customers = useAppSelector(state => state.cusstomers.customers);
+  const customers = useAppSelector(state => state.customers.customers);
   const loading = useAppSelector(state => state.claims.loading);
 
   return {
