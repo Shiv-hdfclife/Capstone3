@@ -39,14 +39,8 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const [selectedDocumentType, setSelectedDocumentType] = useState<string>('');
-    const [selectedBusinessType, setSelectedBusinessType] = useState<string>('');
-    const [selectedChannelType, setSelectedChannelType] = useState<string>('');
-    const [uploadLoading, setUploadLoading] = useState(false);
     const [partners, setPartners] = useState<{ id: number, name: string }[]>([]);
     const [partnersLoading, setPartnersLoading] = useState(false);
-    const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
 
     const dispatch = useAppDispatch();
     const isDesktop = useIsDesktop();

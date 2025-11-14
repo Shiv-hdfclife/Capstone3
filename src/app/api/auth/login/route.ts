@@ -43,12 +43,38 @@ export async function POST(req: Request) {
             idToken: idToken ? 'Present' : 'Missing'
         });
 
-        // Create mock user data (you might want to decode the JWT token for real user info)
-        const userData = {
-            name: username, // You can decode this from the JWT token if needed
-            role: "User",
+        // Decode the access token to extract user information
+        let userData = {
+            name: username, // fallback
+            role: "User", // fallback
+            roles: ["user"], // fallback
             time: new Date().toLocaleString()
         };
+
+        try {
+            if (accessToken) {
+                // JWT tokens have 3 parts separated by dots: header.payload.signature
+                const base64Payload = accessToken.split('.')[1];
+                // Add padding if needed for base64 decoding
+                const paddedPayload = base64Payload + '=='.substring(0, (4 - base64Payload.length % 4) % 4);
+                const decodedPayload = JSON.parse(atob(paddedPayload));
+
+                console.log('Decoded JWT payload:', decodedPayload);
+
+                // Extract user information from JWT payload
+                userData = {
+                    name: decodedPayload.name || decodedPayload.preferred_username || username,
+                    role: decodedPayload.realm_access?.roles?.[0] || "user", // Primary role
+                    roles: decodedPayload.realm_access?.roles || ["user"], // All realm roles
+                    time: new Date().toLocaleString()
+                };
+
+                console.log('Extracted user data:', userData);
+            }
+        } catch (jwtError) {
+            console.warn('Failed to decode JWT token:', jwtError);
+            // Use fallback userData if JWT decoding fails
+        }
 
         // Create response with user data
         const response = NextResponse.json({
