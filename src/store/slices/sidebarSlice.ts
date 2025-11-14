@@ -1,33 +1,43 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SidebarState {
-  leftSectionMobile: boolean;
-  leftSectionDesktop: boolean;
-  selectedSection: string;
+    leftDesktopOpen: boolean;
+    leftMobileOpen: boolean;
+    leftSection: boolean;
+    selectedSection: string;
 }
 
 const initialState: SidebarState = {
-  leftSectionMobile: false,
-  leftSectionDesktop: true,
-  selectedSection: "dashboard",
+    leftDesktopOpen: true,
+    leftMobileOpen: false,
+    leftSection: false,
+    selectedSection: "dashboard",
 };
 
 const sidebarSlice = createSlice({
-  name: "sidebar",
-  initialState,
-  reducers: {
-    setLeftSectionMobile(state, action: PayloadAction<boolean>) {
-      state.leftSectionMobile = action.payload;
+    name: "sidebar",
+    initialState,
+    reducers: {
+        setLeftDesktopOpen(state, action: PayloadAction<boolean>) {
+            state.leftDesktopOpen = action.payload;
+        },
+        setLeftMobileOpen(state, action: PayloadAction<boolean>) {
+            state.leftMobileOpen = action.payload;
+        },
+        setLeftSection(state, action: PayloadAction<boolean>) {
+            state.leftSection = action.payload;
+        },
+        setSelectedSection(state, action: PayloadAction<string>) {
+            state.selectedSection = action.payload;
+        },
     },
-    setLeftSectionDesktop(state, action: PayloadAction<boolean>) {
-      state.leftSectionDesktop = action.payload;
-    },
-    setSelectedSection(state, action: PayloadAction<string>) {
-      state.selectedSection = action.payload;
-    },
-  },
 });
 
-export const { setLeftSectionMobile, setLeftSectionDesktop, setSelectedSection } =
-  sidebarSlice.actions;
+export const {
+    setLeftDesktopOpen,
+    setLeftMobileOpen,
+    setLeftSection,
+    setSelectedSection,
+} = sidebarSlice.actions;
+
 export default sidebarSlice.reducer;
