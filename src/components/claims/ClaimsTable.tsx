@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { useState } from "react";
 import {
   Table,
   Table as OTable,
@@ -21,62 +22,79 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowsDownUp } from "@phosphor-icons/react";
 import { IconButton } from "@hdfclife-insurance/one-x-ui";
+import ClaimViewModal from "./ClaimViewModal";
 
 const tableData = [
   {
-    rcd: "12/07/2024",
-    lan: "AB2C3D4E5F6G7H8",
-    memberName: "Poorva Mallesh",
+    userId: 1,
+    claimId: 22,
+    policyNumber: "ACNKW112",
     status: "Pending",
-    dob: "06/08/1990",
-    reason: "UW/Medical bucket",
-    policyNo: "PP000095",
-    sum: 85000,
+    panSubmitted: true,
+    aadharSubmitted: true,
+    deathCertificateSubmitted: true,
+    claimAmount: 85000,
   },
   {
-    rcd: "01/08/2024",
-    lan: "XY9Z8W7V6U5T4S3R",
-    memberName: "Hemant Kumar",
-    status: "Issued",
-    dob: "06/08/1990",
-    reason: "FR Closed",
-    policyNo: "PP000357",
-    sum: 72000,
+    userId: 2,
+    claimId: 23,
+    policyNumber: "ACNKW113",
+    status: "Approved",
+    panSubmitted: true,
+    aadharSubmitted: true,
+    deathCertificateSubmitted: true,
+    claimAmount: 150000,
   },
   {
-    rcd: "02/08/2024",
-    lan: "M9N8B7V6C5X4Z3Y2",
-    memberName: "Tanay Seth",
+    userId: 3,
+    claimId: 24,
+    policyNumber: "ACNKW114",
     status: "Rejected",
-    dob: "06/08/1990",
-    reason: "FR Closed",
-    policyNo: "PP000123",
-    sum: 95000,
+    panSubmitted: false,
+    aadharSubmitted: true,
+    deathCertificateSubmitted: false,
+    claimAmount: 75000,
+  },
+  {
+    userId: 4,
+    claimId: 25,
+    policyNumber: "ACNKW115",
+    status: "Pending",
+    panSubmitted: true,
+    aadharSubmitted: false,
+    deathCertificateSubmitted: true,
+    claimAmount: 200000,
   },
 ];
 
 
-type User = {
-  rcd: string;
-  lan: string;
-  memberName: string;
-  status: string;
-  reason: string;
-  policyNo: string;
-  sum: number;
-  dob: string;
-  actions?: string;
+type Claim = {
+  userId: number;
+  claimId: number;
+  policyNumber: string;
+  claimAmount: number;
+  aadharSubmitted: boolean;
+  panSubmitted: boolean;
+  deathCertificateSubmitted: boolean;
+  status: 'Pending' | 'Approved' | 'Rejected';
 };
 
-const columnHelper = createColumnHelper<User>();
+const columnHelper = createColumnHelper<Claim>();
 
-const defaultData = tableData as User[];
+const defaultData = tableData as Claim[];
+console.log("Default Data:", defaultData);
 
-export default function DashboardTable({ filter = "all" }: { filter?: string }) {
+export default function DashboardTable({ filter }: { filter?: string }) {
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 });
-  const [sorting, setSorting] = React.useState([]);
+  const [sorting, setSorting] = React.useState<any[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Claim | null>(null);
 
-  const filteredData = filter === "all" ? defaultData : defaultData.filter((d) => d.status === filter);
+  // console.log("ClaimsTable - Received filter:", filter);
+  // console.log("ClaimsTable - Default data:", defaultData);
+
+  const filteredData = !filter || filter === "All" ? defaultData : defaultData.filter((d) => d.status === filter);
+
+  // console.log("ClaimsTable - Filtered data:", filteredData);
 
   const columns = [
     {
@@ -91,23 +109,68 @@ export default function DashboardTable({ filter = "all" }: { filter?: string }) 
         <Checkbox checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} />
       ),
     },
-    columnHelper.accessor("rcd", { header: "RCD", cell: (info) => info.getValue(), enableSorting: true }),
-    columnHelper.accessor("lan", { header: "LAN", cell: (info) => info.getValue() }),
-    columnHelper.accessor("memberName", { header: "Member Name", cell: (info) => info.getValue() }),
-    columnHelper.accessor("policyNo", { header: "Policy No", cell: (info) => info.getValue() }),
-    columnHelper.accessor("sum", { header: "Sum", cell: (info) => info.getValue() }),
-    columnHelper.accessor("dob", { header: "DOB", cell: (info) => info.getValue() }),
-    columnHelper.accessor("status", { header: "Status", cell: (info) => info.getValue() }),
-    columnHelper.accessor("actions", {
+    columnHelper.accessor("claimId", { header: "Claim ID", cell: (info) => info.getValue(), enableSorting: true }),
+    columnHelper.accessor("policyNumber", { header: "Policy No", cell: (info) => info.getValue() }),
+    columnHelper.accessor("claimAmount", {
+      header: "Claim Amount",
+      cell: (info) => `₹${info.getValue().toLocaleString()}`,
+      enableSorting: true
+    }),
+    columnHelper.accessor("aadharSubmitted", {
+      header: "Aadhar",
+      cell: (info) => (
+        <Text size="sm" color={info.getValue() ? "green" : "red"}>
+          {info.getValue() ? "✓ Submitted" : "✗ Not Submitted"}
+        </Text>
+      )
+    }),
+    columnHelper.accessor("panSubmitted", {
+      header: "PAN",
+      cell: (info) => (
+        <Text size="sm" color={info.getValue() ? "green" : "red"}>
+          {info.getValue() ? "✓ Submitted" : "✗ Not Submitted"}
+        </Text>
+      )
+    }),
+    columnHelper.accessor("deathCertificateSubmitted", {
+      header: "Death Certificate",
+      cell: (info) => (
+        <Text size="sm" color={info.getValue() ? "green" : "red"}>
+          {info.getValue() ? "✓ Submitted" : "✗ Not Submitted"}
+        </Text>
+      )
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: (info) => {
+        const status = info.getValue();
+        const colorMap: Record<string, string> = {
+          'Pending': 'yellow',
+          'Approved': 'green',
+          'Rejected': 'red'
+        };
+        return (
+          <Text size="sm" color={colorMap[status] || 'gray'}>
+            {status}
+          </Text>
+        );
+      }
+    }),
+    {
       id: "action",
       header: "Actions",
-      cell: () => (
+      cell: ({ row }: any) => (
         <Flex gap={2}>
-          <button className="text-sm text-red-600">View</button>
-          <button className="text-sm text-red-600">Edit</button>
+          <button onClick={() => {
+            console.log("This claim section was clicked");
+            setSelectedCustomer(row.original)
+          }
+          }
+            className="text-sm text-blue-600 hover:text-blue-800 underline">View/Edit
+          </button>
         </Flex>
       ),
-    }),
+    },
   ];
 
   const table = useReactTable({
@@ -117,8 +180,12 @@ export default function DashboardTable({ filter = "all" }: { filter?: string }) 
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: { pagination },
+    state: {
+      pagination,
+      sorting
+    },
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
   });
 
   return (
@@ -168,6 +235,16 @@ export default function DashboardTable({ filter = "all" }: { filter?: string }) 
           onPageChange={(details: { page: number }) => table.setPageIndex(details.page - 1)}
         />
       </Flex>
+
+      {
+        selectedCustomer && (
+          <ClaimViewModal
+            claim={selectedCustomer}
+            userRole="admin"
+            onClose={() => setSelectedCustomer(null)} />
+        )
+      }
     </div>
+
   );
 }

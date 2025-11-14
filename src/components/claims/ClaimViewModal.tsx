@@ -17,16 +17,14 @@ import { useAppDispatch } from '../../store/hooks';
 import { updateClaimStatus } from '../../store/slices/claimsSlice';
 
 type Claim = {
+  userId:number;
   claimId: number;
   policyNumber: string;
-  claimantName: string;
   claimAmount: number;
   status: 'Pending' | 'Approved' | 'Rejected';
   aadharSubmitted: boolean;
   panSubmitted: boolean;
   deathCertificateSubmitted: boolean;
-  createdDate: string;
-  adminNote?: string;
 };
 
 interface ClaimViewModalProps {
@@ -101,10 +99,6 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
         {/* Claim Information Card */}
         <Card>
           <Flex align="center" justify="space-between" className="mb-4">
-            <div>
-              <Text fontWeight="bold" size="lg">{claim.claimantName}</Text>
-              <Caption>Claimant</Caption>
-            </div>
             <Badge color={getStatusColor(claim.status)}>
               {claim.status}
             </Badge>
@@ -125,10 +119,7 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
                 </Text>
               </div>
               <div className="space-y-1">
-                <Caption className="text-gray-800 text-sm">Submitted Date</Caption>
-                <Text className="text-gray-900" fontWeight="medium">
-                  {new Date(claim.createdDate).toLocaleDateString()}
-                </Text>
+
               </div>
               <div className="space-y-1">
                 <Caption className="text-gray-800 text-sm">Status</Caption>
@@ -223,17 +214,7 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
           </Card>
         )}
 
-        {/* Show admin note if claim is rejected */}
-        {claim.status === 'Rejected' && claim.adminNote && (
-          <Card>
-            <Card.Section className="bg-red-50">
-              <Heading as="h4" fontWeight="medium" className="mb-2 text-red-800">
-                Rejection Reason
-              </Heading>
-              <Text color="red">{claim.adminNote}</Text>
-            </Card.Section>
-          </Card>
-        )}
+
       </div>
     </Dialog>
   );

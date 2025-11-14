@@ -43,7 +43,7 @@ export default function CustomersTable() {
   const dispatch = useAppDispatch();
   const customers = useAppSelector(state => state.cusstomers.customers);
   const loading = useAppSelector(state => state.cusstomers.loading);
-  
+
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -97,11 +97,15 @@ export default function CustomersTable() {
       header: "Actions",
       enableSorting: false,
       cell: ({ row }: any) => (
-        <Button 
-          size="xs" 
+        <Button
+          size="xs"
           variant="primary"
           color="primary"
-          onClick={() => setSelectedCustomer(row.original)}
+          onClick={() => {
+            console.log("This button was clicked");
+            setSelectedCustomer(row.original)
+          }
+          }
         >
           Raise Claim
         </Button>

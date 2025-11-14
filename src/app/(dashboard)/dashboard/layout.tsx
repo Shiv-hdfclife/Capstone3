@@ -99,135 +99,12 @@ export default function DashboardLayout({
         dispatch(setLeftMobileOpen(pressed));
     };
 
-    const handlePressedChange = useCallback((pressed: boolean) => {
-        dispatch(setLeftSection(pressed));
-    }, [dispatch]);
+
 
     const handleSectionClick = (section: string) => {
         console.log("Section clicked:", section);
         dispatch(setSelectedSection(section));
     };
-
-    // File upload handlers with API integration
-    const handleFileAccept = useCallback(async (details: any) => {
-        console.log('🟢 Raw Loader File accepted - details:', details);
-
-        let file: File | null = null;
-
-        if (details?.files?.[0]) {
-            file = details.files[0];
-        } else if (details?.file) {
-            file = details.file;
-        }
-
-        if (!file) {
-            alert('❌ No file found to upload');
-            return;
-        }
-
-        if (!selectedDocumentType) {
-            alert('❌ Please select a partner before uploading');
-            return;
-        }
-
-        if (!selectedBusinessType) {
-            alert('❌ Please select a business type before uploading');
-            return;
-        }
-
-        if (!selectedChannelType) {
-            alert('❌ Please select a channel type before uploading');
-            return;
-        }
-
-        setUploadLoading(true);
-        try {
-            console.log('📤 Uploading raw loader file to API:', {
-                fileName: file.name,
-                fileSize: file.size,
-                documentType: selectedDocumentType,
-                businessType: selectedBusinessType,
-                channelType: selectedChannelType
-            });
-
-            const partnerId = "5";
-            const configId = "configid";
-
-            const response = await uploadRawLoader(file, selectedDocumentType, partnerId, configId);
-            console.log('✅ Raw Loader Upload API response:', response);
-            alert(`✅ File "${file.name}" uploaded successfully to raw loader!`);
-
-            // Reset form on success
-            setSelectedDocumentType('');
-            setSelectedBusinessType('');
-            setSelectedChannelType('');
-            setDrawerOpen(false);
-        } catch (error: any) {
-            console.error('❌ Raw Loader Upload API error:', error);
-            alert(`❌ Raw Loader Upload failed: ${error.message || 'Unknown error'}`);
-        } finally {
-            setUploadLoading(false);
-        }
-    }, [selectedDocumentType, selectedBusinessType, selectedChannelType]);
-
-    const handleFileChange = useCallback((details: any) => {
-        console.log('🔄 Raw Loader File changed - details:', details);
-    }, []);
-
-    const handleFileReject = useCallback((details: any) => {
-        console.log('🔴 Raw Loader File rejected - details:', details);
-
-        let errorMessage = 'File validation failed';
-
-        if (details?.files?.[0]?.errors?.[0]?.message) {
-            errorMessage = details.files[0].errors[0].message;
-        } else if (details?.file?.errors?.[0]?.message) {
-            errorMessage = details.file.errors[0].message;
-        } else if (details?.errors?.[0]?.message) {
-            errorMessage = details.errors[0].message;
-        }
-
-        alert(`❌ Raw Loader File rejected: ${errorMessage}`);
-    }, []);
-
-    // File validation function for Excel files
-    const validateFile = useCallback((file: File, details?: any) => {
-        console.log('🔍 Validating raw loader file:', file.name, 'Size:', file.size, 'Type:', file.type);
-
-        const errors: any[] = [];
-
-        // Check file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            errors.push({
-                code: 'file-too-large',
-                message: 'File size must be less than 10MB'
-            });
-        }
-
-        // Check minimum file size
-        if (file.size < 1024) {
-            errors.push({
-                code: 'file-too-small',
-                message: 'File size must be at least 1KB'
-            });
-        }
-
-        // Excel file type validation
-        const fileName = file.name.toLowerCase();
-        const allowedTypes = [
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ];
-
-        if (!fileName.endsWith('.xls') && !fileName.endsWith('.xlsx') && !allowedTypes.includes(file.type)) {
-            errors.push({
-                code: 'file-invalid-type',
-                message: 'Only Excel files (.xls, .xlsx) are allowed'
-            });
-        }
-
-        return errors.length > 0 ? errors : null;
-    }, []);
 
     const sidebarItems = [
         {
@@ -349,8 +226,8 @@ export default function DashboardLayout({
                                     <div
                                         key={item.section}
                                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${selectedSection === item.section
-                                                ? 'bg-indigo-100 text-indigo-700 font-medium'
-                                                : 'hover:bg-gray-100'
+                                            ? 'bg-indigo-100 text-indigo-700 font-medium'
+                                            : 'hover:bg-gray-100'
                                             }`}
                                         onClick={() => {
                                             handleSectionClick(item.section);
@@ -392,132 +269,6 @@ export default function DashboardLayout({
                     {children}
                 </main>
             </div>
-
-            {/* Right Sidebar - Hidden on mobile, visible on desktop */}
-            <aside className="fixed hidden lg:flex px-1 py-4 top-[var(--header-height)] bottom-0 border-0 border-l border-indigo-200 right-0 bg-white z-40">
-                <Flex direction="column" align="center" gap={6}>
-                    <IconButton
-                        color="gray"
-                        variant="tertiary"
-                        onClick={() => setDrawerOpen(true)}
-                        size="sm"
-                    >
-                        <UploadSimple />
-                    </IconButton>
-                </Flex>
-            </aside>
-
-            {/* Mobile Upload Button - Floating Action Button */}
-            <div className="lg:hidden fixed bottom-4 right-4 z-50">
-                <IconButton
-                    color="primary"
-                    variant="primary"
-                    onClick={() => setDrawerOpen(true)}
-                    size="lg"
-                    className="rounded-full shadow-lg"
-                >
-                    <UploadSimple />
-                </IconButton>
-            </div>
-
-            <Drawer
-                direction="right"
-                withOverlay={false}
-                open={drawerOpen}
-                onClose={() => setDrawerOpen(false)}
-            >
-                <DrawerContent className="w-full max-w-sm lg:max-w-md p-4 lg:p-6 shadow-shadow-5 top-[var(--header-height,68px)] z-50">
-                    <Text
-                        fontWeight="semibold"
-                        className="text-accent-secondary"
-                        size="lg"
-                    >
-                        Manage documents
-                    </Text>
-
-                    <div className="mt-4 lg:mt-6 space-y-4 lg:space-y-6">
-                        <Select
-                            label="Please select your partner"
-                            value={selectedDocumentType ? [selectedDocumentType] : []}
-                            onValueChange={(details: any) => {
-                                console.log('📋 Partner selected details:', details);
-                                const value = details.value?.[0] || details.value || '';
-                                console.log('📋 Partner selected value:', value);
-                                setSelectedDocumentType(value);
-
-                                // Find the selected partner's ID
-                                const selectedPartner = partners.find(partner => partner.name === value);
-                                if (selectedPartner) {
-                                    console.log('🎯 Selected partner ID:', selectedPartner.id);
-                                    setSelectedPartnerId(selectedPartner.id.toString());
-                                } else {
-                                    setSelectedPartnerId('');
-                                }
-                            }}
-                            items={partnersLoading
-                                ? [{ label: "Loading partners...", value: "loading" }]
-                                : partners
-                                    .filter(partner => partner && partner.name) // Filter out null/undefined partners
-                                    .map(partner => ({
-                                        label: partner.name,
-                                        value: partner.name
-                                    }))
-                            }
-                            disabled={partnersLoading}
-                        />
-
-                        <Select
-                            label="Please select business type"
-                            value={selectedBusinessType ? [selectedBusinessType] : []}
-                            onValueChange={(details: any) => {
-                                console.log('📋 Business type selected details:', details);
-                                const value = details.value?.[0] || details.value || '';
-                                console.log('📋 Business type selected value:', value);
-                                setSelectedBusinessType(value);
-                            }}
-                            items={[
-                                "New Business",
-                            ]}
-                        />
-
-                        <Select
-                            label="Please select channel type"
-                            value={selectedChannelType ? [selectedChannelType] : []}
-                            onValueChange={(details: any) => {
-                                console.log('📋 Channel type selected details:', details);
-                                const value = details.value?.[0] || details.value || '';
-                                console.log('📋 Channel type selected value:', value);
-                                setSelectedChannelType(value);
-                            }}
-                            items={[
-                                "MFI",
-                                "SHG",
-                            ]}
-                        />
-
-                        <Upload
-                            accept="application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            allowDrop
-                            buttonLabel={uploadLoading ? "Uploading..." : "Choose Excel File"}
-                            label={`Upload Raw Loader Data${selectedDocumentType ? ` - ${selectedDocumentType}` : ''}${selectedBusinessType ? ` - ${selectedBusinessType}` : ''}${selectedChannelType ? ` - ${selectedChannelType}` : ''}`}
-                            minFileSize={1024}
-                            maxFileSize={10 * 1024 * 1024} // 10MB
-                            size="lg"
-                            variant="extended"
-                            disabled={uploadLoading || !selectedDocumentType || !selectedBusinessType || !selectedChannelType}
-                            helperText={{
-                                message: (!selectedDocumentType || !selectedBusinessType || !selectedChannelType)
-                                    ? "Please select all required fields first"
-                                    : "Only Excel files (.xls, .xlsx) are allowed (1KB - 10MB)"
-                            }}
-                            onFileAccept={handleFileAccept}
-                            onFileChange={handleFileChange}
-                            onFileReject={handleFileReject}
-                            validate={validateFile}
-                        />
-                    </div>
-                </DrawerContent>
-            </Drawer>
         </div>
     );
 }
