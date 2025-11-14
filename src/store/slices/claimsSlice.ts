@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../services/api';
+import claimsAPI from '../../app/api/claims/get_Claims/api';
+import { postClaim, CreateClaimRequest } from "../../services/post_claim";
+
 
 export interface Claim {
   claimId: number;
@@ -30,24 +32,25 @@ const initialState: ClaimsState = {
 // Async thunks
 export const fetchClaims = createAsyncThunk(
   'claims/fetchClaims',
-  async (params: { status?: string; userOnly?: boolean } = {}) => {
-    const response = await api.fetchClaims(params);
+  async (params: { status?: string; userOnly?: boolean; role: string; userId: string }) => {
+
+    // only role & userId used by the API
+    const response = await claimsAPI.fetchClaims(params.role, params.userId);
+
+    // filter on frontend if needed
+    if (params.status) {
+      return response.filter((c: Claim) => c.status === params.status);
+    }
+
     return response;
   }
 );
 
+
 export const createClaim = createAsyncThunk(
-  'claims/createClaim',
-  async (claimData: {
-    policyId: number;
-    policyNumber: string;
-    claimantName: string;
-    claimAmount: number;
-    aadharSubmitted: boolean;
-    panSubmitted: boolean;
-    deathCertificateSubmitted: boolean;
-  }) => {
-    const response = await api.createClaim(claimData);
+  "claims/createClaim",
+  async (data: CreateClaimRequest) => {
+    const response = await postClaim(data);
     return response;
   }
 );
@@ -59,7 +62,7 @@ export const updateClaimStatus = createAsyncThunk(
     status: string;
     adminNote?: string;
   }) => {
-    const response = await api.decisionOnClaim(params.claimId, {
+    const response = await claimsAPI.decisionOnClaim(params.claimId, {
       decision: params.status,
       note: params.adminNote
     });

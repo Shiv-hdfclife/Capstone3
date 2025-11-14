@@ -1,9 +1,9 @@
-import ClaimsSection from '../claims/ClaimsTable'
+import ClaimsSection from '../claims/ClaimsSection'
 
 export default function ClaimSection() {
     return (
         <div>
-            <ClaimsSection />
+            <ClaimsSection userRole="user" />
         </div>
     )
 }

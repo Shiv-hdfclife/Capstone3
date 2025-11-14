@@ -7,6 +7,8 @@ import {
   Pagination,
   Checkbox,
   Text,
+  Button,
+  Badge
 } from "@hdfclife-insurance/one-x-ui";
 import {
   createColumnHelper,
@@ -15,6 +17,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  SortingState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowsDownUp } from "@phosphor-icons/react";
 import { IconButton } from "@hdfclife-insurance/one-x-ui";

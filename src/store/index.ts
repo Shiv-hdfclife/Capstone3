@@ -10,7 +10,7 @@ export const store = configureStore({
         sidebar: sidebarReducer,
         user: userReducer,
         claims: claimsReducer,
-        cusstomers: customersReducer,
+        customers: customersReducer,
     },
 });
 

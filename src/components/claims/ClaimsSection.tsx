@@ -24,17 +24,38 @@ export default function ClaimsSection({ userRole }: Props) {
   const claims = useAppSelector((s) => s.claims.claims);
   const loading = useAppSelector((s) => s.claims.loading);
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("All");
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const role = localStorage.getItem("role") || "user";
+  const userId = localStorage.getItem("userId") || "USER001";
 
   // Fetch claims when component mounts or when activeTab/userRole change.
   const fetchClaimsData = useCallback(() => {
     const status = activeTab === "All" ? undefined : activeTab;
     const userOnly = userRole === "user";
-    dispatch(fetchClaims({ status, userOnly }));
-  }, [dispatch, activeTab, userRole]);
+
+    console.log("🔄 Fetching claims with params:", {
+      status,
+      userOnly,
+      activeTab,
+    });
+    dispatch(
+      fetchClaims({
+        status,
+        userOnly,
+        role: userRole,
+        userId: "USER001", // Replace with actual user ID
+      })
+    )
+      .then(() => {
+        setDataLoaded(true);
+      })
+      .catch((error) => {
+        console.error("❌ Error fetching claims:", error);
+      });
+  }, [dispatch, activeTab, userRole]); // ← Removed `loading` dependency
 
   useEffect(() => {
     fetchClaimsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchClaimsData]);
 
   const getTabCount = useMemo(() => {
@@ -59,10 +80,17 @@ export default function ClaimsSection({ userRole }: Props) {
       </Text>
 
       <div className="bg-blue-100 p-2 text-xs">
-        DEBUG: Claims loaded = {claims.length} | Loading = {loading ? "Yes" : "No"}
+        DEBUG: Claims loaded = {claims.length} | Loading ={" "}
+        {loading ? "Yes" : "No"} | Tab = {activeTab} | Data Loaded ={" "}
+        {dataLoaded ? "Yes" : "No"}
       </div>
 
-      <Tabs size="sm" value={activeTab} onValueChange={handleTabChange} variant="underline">
+      <Tabs
+        size="sm"
+        value={activeTab}
+        onValueChange={handleTabChange}
+        variant="underline"
+      >
         <ScrollArea>
           <TabsList>
             {TABS.map((tab) => (

@@ -33,7 +33,7 @@ import { logout } from "../../../store/slices/userSlice";
 import { uploadRawLoader, fetchPartners } from "../../../services/config.upload";
 import Logo from "../../../../public/Logo.png";
 import useIsDesktop from "../../../hooks/useIsDesktop";
-
+ 
 export default function DashboardLayout({
     children,
 }: {
@@ -41,16 +41,17 @@ export default function DashboardLayout({
 }) {
     const [partners, setPartners] = useState<{ id: number, name: string }[]>([]);
     const [partnersLoading, setPartnersLoading] = useState(false);
-
+    const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
+ 
     const dispatch = useAppDispatch();
     const isDesktop = useIsDesktop();
-
+ 
     const leftDesktopOpen = useAppSelector((state) => state.sidebar.leftDesktopOpen);
     const leftMobileOpen = useAppSelector((state) => state.sidebar.leftMobileOpen);
     const leftSection = useAppSelector((state) => state.sidebar.leftSection);
     const selectedSection = useAppSelector((state) => state.sidebar.selectedSection);
     const { isAuthenticated, name, role, loading } = useAppSelector((state) => state.user);
-
+ 
     // Fetch partners on component mount
     React.useEffect(() => {
         const loadPartners = async () => {
@@ -59,7 +60,7 @@ export default function DashboardLayout({
                 console.log('📋 Fetching partners from API for layout...');
                 const response = await fetchPartners();
                 console.log('✅ Partners fetched successfully for layout:', response);
-
+ 
                 if (response.success && response.partners) {
                     // Filter out any invalid partners
                     const validPartners = response.partners.filter(
@@ -81,25 +82,25 @@ export default function DashboardLayout({
                 setPartnersLoading(false);
             }
         };
-
+ 
         loadPartners();
     }, []);
-
+ 
     const handleDesktopToggle = () => {
         dispatch(setLeftDesktopOpen(!leftDesktopOpen));
     };
-
+ 
     const handleMobileToggle = (pressed: boolean) => {
         dispatch(setLeftMobileOpen(pressed));
     };
-
-
-
+ 
+ 
+ 
     const handleSectionClick = (section: string) => {
         console.log("Section clicked:", section);
         dispatch(setSelectedSection(section));
     };
-
+ 
     const sidebarItems = [
         {
             label: "Dashboard",
@@ -117,7 +118,7 @@ export default function DashboardLayout({
             icon: <UserGear size={20} />,
         },
     ];
-
+ 
     return (
         <div className="min-h-dvh flex flex-col bg-gray-100 [--left-sidebar-width:240px] [--left-sidebar-width-mobile:280px] [--gutter:16px] lg:[--gutter:24px] [--header-height:68px] [--right-sidebar-width:80px]">
             <Header
@@ -130,14 +131,14 @@ export default function DashboardLayout({
                         onPressedChange={handleMobileToggle}
                     />
                 )}
-
+ 
                 {isDesktop && (
                     <Header.Hamburger
                         pressed={leftDesktopOpen}
                         onPressedChange={handleDesktopToggle}
                     />
                 )}
-
+ 
                 <div className="flex items-center h-full max-h-[50px]">
                     <Image
                         src={Logo}
@@ -147,7 +148,7 @@ export default function DashboardLayout({
                         width={150}
                     />
                 </div>
-
+ 
                 <div className="flex items-center justify-end gap-2 lg:gap-3 w-full">
                     <>
                         <div className="text-right hidden lg:block">
@@ -176,7 +177,7 @@ export default function DashboardLayout({
                     </>
                 </div>
             </Header>
-
+ 
             <div className="lg:flex flex-1">
                 {/* Left Sidebar Desktop */}
                 <aside
@@ -206,7 +207,7 @@ export default function DashboardLayout({
                         </div>
                     </ScrollArea>
                 </aside>
-
+ 
                 {/* Left Sidebar Mobile */}
                 <Drawer
                     open={leftMobileOpen}
@@ -250,7 +251,7 @@ export default function DashboardLayout({
                         </div>
                     </DrawerContent>
                 </Drawer>
-
+ 
                 {/* MAIN CONTENT */}
                 <main
                     style={
@@ -266,3 +267,4 @@ export default function DashboardLayout({
         </div>
     );
 }
+ 

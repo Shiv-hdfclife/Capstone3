@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../services/api';
+import api from '../../app/api/prospects/get_Customer/api';
 
 export interface Customer {
   policyId: number;
@@ -27,9 +27,25 @@ const initialState: CustomersState = {
 
 export const fetchCustomers = createAsyncThunk(
   'customers/fetchCustomers',
-  async () => {
-    const response = await api.fetchCustomers();
-    return response;
+  async (_, { getState }) => {
+    const state = getState() as any;
+
+    // try reading from user slice
+    let role = state.user?.role as string | null;
+    let userId = state.user?.userId as string | null;
+
+    //  SAFETY FALLBACKS so API ALWAYS FIRES
+    if (!role) {
+      role = "user";           // default role
+    }
+    if (!userId) {
+      userId = "USER001";      // default user id
+    }
+
+    console.log("fetchCustomers thunk → calling API with:", { role, userId });
+
+    const res = await api.fetchCustomers(role, userId);
+    return res;
   }
 );
 
