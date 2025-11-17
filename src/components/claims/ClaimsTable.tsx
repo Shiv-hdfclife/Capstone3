@@ -79,7 +79,7 @@ function DashboardTable({
         cell: (info) => `₹${info.getValue().toLocaleString()}`,
         enableSorting: true
       }),
-      columnHelper.accessor("aadharSubmitted", {
+      columnHelper.accessor("aadhaarSubmitted", {
         header: "Aadhar",
         cell: (info) => (
           <Text size="sm" color={info.getValue() ? "green" : "red"}>
