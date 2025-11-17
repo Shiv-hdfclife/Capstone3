@@ -11,11 +11,11 @@ export type UpdateClaimStatusRequest = {
   claimStatus: string;       // "APPROVED" | "REJECTED"
 };
 
-const API_BASE = "http://192.168.254.58:8083";
+const API_BASE = "http://192.168.254.77:8082";
 // 🚀 Change only this if backend URL changes
 
 export async function postClaimDecision(payload: UpdateClaimStatusRequest) {
-  const endpoint = "/api/claims/status"; 
+  const endpoint = "/CLAIM-SERVICE-APP/approve";
   // 🚀 Same endpoint as creation (backend requires full object)
 
   const url = `${API_BASE}${endpoint}`;

@@ -58,11 +58,11 @@ export const createClaim = createAsyncThunk(
 
 export const updateClaimStatus = createAsyncThunk(
   "claims/updateClaimStatus",
-  async (params: { claimId: number; status: string; adminNote?: string }) => {
+  async (params: { claimId: number; status: string; adminNote?: string; claim: Claim }) => {
     const response = await claimsAPI.decisionOnClaim(params.claimId, {
       decision: params.status,
       note: params.adminNote,
-    });
+    }, params.claim);
     return response;
   }
 );

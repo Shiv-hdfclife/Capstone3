@@ -46,7 +46,8 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
         status: decision,
         adminNote: decision === 'Rejected'
           ? note || `Missing documents: ${missingDocs.join(', ')}`
-          : note
+          : note,
+        claim: claim
       })).unwrap();
       // Do NOT call a parent refresh here — parent manages fetching.
       onClose();
