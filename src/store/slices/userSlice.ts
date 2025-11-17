@@ -4,18 +4,20 @@ export interface UserState {
   isAuthenticated: boolean;
   name: string | null;
   role: string | null;
-  userId: string | null; // <-- ADD THIS
+  userId: string | null; 
   lastLoginTime: string | null;
   loading: boolean;
   error: string | null;
+  token: string | null;
 }
 
 const initialState: UserState = {
   isAuthenticated: false,
   name: null,
   role: null,
-  userId: null,   // <-- ADD THIS
+  userId: null,   
   lastLoginTime: null,
+  token: null,
   loading: false,
   error: null,
 };
@@ -23,8 +25,9 @@ const initialState: UserState = {
 export interface LoginSuccessPayload {
   name: string;
   role: string;
-  userId: number;       // backend returns raw id (1,2,3)
+  userId: number;       
   time: string;
+  token: string;
 }
 
 const userSlice = createSlice({
@@ -39,11 +42,9 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.name = action.payload.name;
       state.role = action.payload.role;
-
-      // FORMAT USER ID → USER001, USER002...
       state.userId = `USER${String(action.payload.userId).padStart(3, "0")}`;
-
       state.lastLoginTime = action.payload.time;
+      state.token = action.payload.token;
       state.loading = false;
       state.error = null;
     },

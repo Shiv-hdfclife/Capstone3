@@ -15,6 +15,7 @@ import {
 import { useAppDispatch } from "../../store/hooks";
 import { createClaim } from "../../store/slices/claimsSlice";
 import { useAppSelector } from "../../store/hooks";
+import { RowSelection } from "@tanstack/react-table";
 
 type Customer = {
   policyId: number;
@@ -22,7 +23,7 @@ type Customer = {
   holderName: string;
   coverageAmount: number;
   email: string;
-  phone: string;
+  phoneNumber: string;
   active: boolean;
   createdDate: string;
 };
@@ -51,6 +52,8 @@ export default function RaiseClaimModal({
   const userId = useAppSelector((s) => s.user.userId);
   const canSubmit =
     isAmountValid && isAmountWithinCoverage && hasDocuments && !loading;
+
+  const role = useAppSelector((s) => s.user.role);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -163,7 +166,7 @@ export default function RaiseClaimModal({
               <div className="space-y-1">
                 <Caption className="text-gray-800 text-sm">Phone</Caption>
                 <Text className="text-gray-900" fontWeight="medium">
-                  {customer.phone}
+                  {customer.phoneNumber}
                 </Text>
               </div>
             </div>

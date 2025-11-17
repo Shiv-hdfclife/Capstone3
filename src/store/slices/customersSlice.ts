@@ -7,7 +7,7 @@ export interface Customer {
   holderName: string;
   coverageAmount: number;
   email: string;
-  phone: string;
+  phoneNumber?: string;
   active: boolean;
   createdDate: string;
   userId?: string;
