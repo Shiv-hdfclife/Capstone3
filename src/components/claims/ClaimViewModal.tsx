@@ -29,7 +29,7 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
   const [note, setNote] = useState('');
 
   const missingDocs: string[] = [];
-  if (!claim.aadharSubmitted) missingDocs.push('Aadhar Card');
+  if (!claim.aadhaarSubmitted) missingDocs.push('Aadhar Card');
   if (!claim.panSubmitted) missingDocs.push('PAN Card');
   if (!claim.deathCertificateSubmitted) missingDocs.push('Death Certificate');
 
@@ -132,9 +132,9 @@ export default function ClaimViewModal({ claim, userRole, onClose }: ClaimViewMo
 
           <div className="space-y-3">
             <Flex align="center" gap={3}>
-              <Checkbox checked={claim.aadharSubmitted} readOnly />
-              <Text color={claim.aadharSubmitted ? "green" : "red"}>
-                Aadhar Card {claim.aadharSubmitted ? "✓ Submitted" : "✗ Missing"}
+              <Checkbox checked={claim.aadhaarSubmitted} readOnly />
+              <Text color={claim.aadhaarSubmitted ? "green" : "red"}>
+                Aadhar Card {claim.aadhaarSubmitted ? "✓ Submitted" : "✗ Missing"}
               </Text>
             </Flex>
 

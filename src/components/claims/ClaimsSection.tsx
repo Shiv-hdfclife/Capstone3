@@ -31,7 +31,7 @@ export default function ClaimsSection() {
 
   const fetchClaimsData = useCallback(() => {
     const status = activeTab === "All" ? undefined : activeTab;
-    const userOnly = role === "USER"; // normal user only sees his own claims
+    const userOnly = role?.toLowerCase() === "user"; // normal user only sees his own claims
 
     console.log("🔄 Fetching claims:", {
       status,
@@ -85,7 +85,7 @@ export default function ClaimsSection() {
         <TabsContent value={activeTab}>
           <ClaimsTable
             filter={activeTab === "All" ? undefined : activeTab}
-            userRole={role === "ADMIN" ? "admin" : "user"}
+            userRole={role?.toLowerCase() === "admin" ? "admin" : "user"}
           />
         </TabsContent>
       </Tabs>

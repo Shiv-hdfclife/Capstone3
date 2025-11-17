@@ -29,7 +29,7 @@ import {
     setLeftSection,
     setSelectedSection
 } from "../../../store/slices/sidebarSlice";
-import { logout } from "../../../store/slices/userSlice";
+import { logout, loginSuccess } from "../../../store/slices/userSlice";
 import { uploadRawLoader, fetchPartners } from "../../../services/config.upload";
 import Logo from "../../../../public/Logo.png";
 import useIsDesktop from "../../../hooks/useIsDesktop";
