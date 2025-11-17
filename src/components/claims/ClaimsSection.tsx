@@ -26,7 +26,7 @@ export default function ClaimsSection() {
   const claims = useAppSelector((s) => s.claims.claims);
   const loading = useAppSelector((s) => s.claims.loading);
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("All");
-  
+
 
 
   const fetchClaimsData = useCallback(() => {
@@ -71,12 +71,6 @@ export default function ClaimsSection() {
       <Text fontWeight="semibold" size="xl" className="text-primary-blue">
         Claims Management
       </Text>
-
-      <div className="bg-blue-100 p-2 text-xs">
-        DEBUG: userId = {userId} | role = {role} | Claims = {claims.length} | Loading ={" "}
-        {loading ? "Yes" : "No"}
-      </div>
-
       <Tabs size="sm" value={activeTab} onValueChange={handleTabChange} variant="underline">
         <ScrollArea>
           <TabsList>

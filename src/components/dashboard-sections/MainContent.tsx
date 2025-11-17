@@ -13,7 +13,7 @@ export default function MainContent() {
 
     console.log("Current selected section:", selectedSection);
     console.log("ProspectsSection →", ProspectsSection);
-console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
+    console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
 
 
     const renderSection = () => {
@@ -46,9 +46,33 @@ console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
                     </div>
                 );
             case 'prospects':
-                return <ProspectsSection />;
+                // Only show prospects section for 'user' role
+                if (userRole?.toLowerCase() === 'user') {
+                    return <ProspectsSection />;
+                } else {
+                    return (
+                        <div className="space-y-6">
+                            <Text size="xl" fontWeight="semibold" className="text-red-600">
+                                Access Denied
+                            </Text>
+                            <Text>You don't have permission to view this section.</Text>
+                        </div>
+                    );
+                }
             case 'claims':
-                return <ClaimsSection/>;
+                // Show claims section for both 'user' and 'admin' roles
+                if (userRole?.toLowerCase() === 'user' || userRole?.toLowerCase() === 'admin') {
+                    return <ClaimsSection />;
+                } else {
+                    return (
+                        <div className="space-y-6">
+                            <Text size="xl" fontWeight="semibold" className="text-red-600">
+                                Access Denied
+                            </Text>
+                            <Text>You don't have permission to view this section.</Text>
+                        </div>
+                    );
+                }
             default:
                 return (
                     <div className="space-y-6">
