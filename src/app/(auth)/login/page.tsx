@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "../../../store/hooks";
 import { loginStart, loginSuccess, loginFailure } from "../../../store/slices/userSlice";
 import Whatsapp from '../../assets/whatsapp-logo.svg'
-// import Logo from '../../assets/download.svg'
 import Image from "next/image";
 
 const Login = () => {
@@ -118,8 +117,9 @@ const Login = () => {
                 const userPayload = {
                     name: userData.name || username, // Fallback to username if name not provided
                     role: userData.role || "User", // Default role if not provided
-                    userId: userData.userId || userData.id || 1, // Get userId from response, fallback to id or default to 1
-                    time: userData.time || new Date().toLocaleString() // Current time if not provided
+                    time: userData.time || new Date().toLocaleString(), // Current time if not provided
+                    userId: userData.userId || userData.id || username, // Use userId or fallback to username
+                    token: data.token || data.access_token || "" // Use token from response
                 };
 
                 console.log('👤 Storing user data in Redux:', userPayload);

@@ -21,19 +21,8 @@ import {
   PaginationState,
 } from "@tanstack/react-table";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchCustomers } from "../../store/slices/customersSlice";
+import { fetchCustomers, Customer } from "../../store/slices/customersSlice";
 import RaiseClaimModal from "./RaiseClaimModal";
-
-type Customer = {
-  policyId: number;
-  policyNumber: string;
-  holderName: string;
-  coverageAmount: number;
-  email: string;
-  phone: string;
-  active: boolean;
-  createdDate: string;
-};
 
 export default function CustomersTable() {
   const dispatch = useAppDispatch();
@@ -77,7 +66,7 @@ export default function CustomersTable() {
         cell: (info) => info.getValue(),
         enableSorting: false,
       }),
-      columnHelper.accessor("phone", {
+      columnHelper.accessor("phoneNumber", {
         header: "Phone",
         cell: (info) => info.getValue(),
         enableSorting: false,
@@ -190,9 +179,9 @@ export default function CustomersTable() {
         />
       </Flex>
 
-      {selectedCustomer && (
+      {selectedCustomer && selectedCustomer.phoneNumber && (
         <RaiseClaimModal
-          customer={selectedCustomer}
+          customer={selectedCustomer as Customer & { phoneNumber: string }}
           onClose={() => setSelectedCustomer(null)}
         />
       )}
