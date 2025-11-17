@@ -38,9 +38,9 @@ export const fetchClaims = createAsyncThunk(
   }) => {
     const response = await claimsAPI.fetchClaims(params.role, params.userId);
 
-    if (params.status) {
-      return response.filter((c: Claim) => c.status === params.status);
-    }
+    // if (params.status) {
+    //   return response.filter((c: Claim) => c.status === params.status);
+    // }
     return response;
   }
 );
@@ -64,6 +64,8 @@ export const updateClaimStatus = createAsyncThunk(
   }
 );
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
 const claimsSlice = createSlice({
   name: "claims",
   initialState,
@@ -80,7 +82,10 @@ const claimsSlice = createSlice({
       })
       .addCase(fetchClaims.fulfilled, (state, action) => {
         state.loading = false;
-        state.claims = action.payload as Claim[];
+        state.claims = (action.payload as Claim[]).map((c) => ({
+          ...c,
+          status: capitalize(c.status.toLowerCase()) as "Pending" | "Approved" | "Rejected",
+        }));
       })
       .addCase(fetchClaims.rejected, (state, action) => {
         state.loading = false;
@@ -91,7 +96,9 @@ const claimsSlice = createSlice({
       })
       .addCase(updateClaimStatus.fulfilled, (state, action) => {
         const updated = action.payload as Claim;
-        const index = state.claims.findIndex((c) => c.claimId === updated.claimId);
+        const index = state.claims.findIndex(
+          (c) => c.claimId === updated.claimId
+        );
         if (index !== -1) state.claims[index] = updated;
       });
   },

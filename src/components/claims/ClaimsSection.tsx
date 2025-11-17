@@ -72,11 +72,6 @@ export default function ClaimsSection() {
         Claims Management
       </Text>
 
-      <div className="bg-blue-100 p-2 text-xs">
-        DEBUG: userId = {userId} | role = {role} | Claims = {claims.length} | Loading ={" "}
-        {loading ? "Yes" : "No"}
-      </div>
-
       <Tabs size="sm" value={activeTab} onValueChange={handleTabChange} variant="underline">
         <ScrollArea>
           <TabsList>
