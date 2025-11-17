@@ -20,7 +20,7 @@ async function request(url: string) {
   });
 
   if (!res.ok) {
-    console.error("❌ API ERROR:", res.status);
+    console.error("❌ CUSTOMER API ERROR:", res.status);
     throw new Error("API request failed");
   }
 
@@ -29,10 +29,8 @@ async function request(url: string) {
 
 const api = {
   async fetchCustomers(role: string, userId: string): Promise<Customer[]> {
-    // Format must be USER001
-    const formattedId = `${String(userId).padStart(3, "0")}`;
 
-    const url = `${API_BASE}/api/policies/user/${formattedId}`;
+    const url = `${API_BASE}/api/policies/user/${userId}`;
 
     return await request(url);
   },

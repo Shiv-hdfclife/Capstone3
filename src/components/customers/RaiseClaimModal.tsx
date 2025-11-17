@@ -14,6 +14,7 @@ import {
 } from "@hdfclife-insurance/one-x-ui";
 import { useAppDispatch } from "../../store/hooks";
 import { createClaim } from "../../store/slices/claimsSlice";
+import { useAppSelector } from "../../store/hooks";
 
 type Customer = {
   policyId: number;
@@ -47,6 +48,7 @@ export default function RaiseClaimModal({
   const isAmountValid = claimAmount > 0;
   const isAmountWithinCoverage = claimAmount <= customer.coverageAmount;
   const hasDocuments = aadhar || pan || deathCert;
+  const userId = useAppSelector((s) => s.user.userId);
   const canSubmit =
     isAmountValid && isAmountWithinCoverage && hasDocuments && !loading;
 
@@ -77,13 +79,18 @@ export default function RaiseClaimModal({
       return;
     }
 
+    if (!userId) {
+       alert("User not logged in");
+       return;
+    }
+
     setLoading(true);
     try {
       await dispatch(
         createClaim({
-          claimId: `CLM${Date.now()}`, 
-          userId: "USER001",
-          claimAmount: amount, 
+          claimId: `CLM${Date.now()}`,
+          userId: userId!,
+          claimAmount: amount,
           policyNumber: customer.policyNumber,
           aadhaarSubmitted: aadhar,
           panSubmitted: pan,

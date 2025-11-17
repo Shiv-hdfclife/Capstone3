@@ -48,7 +48,7 @@ console.log("ProspectsSection IMPORTED AS:", ProspectsSection);
             case 'prospects':
                 return <ProspectsSection />;
             case 'claims':
-                return <ClaimsSection userRole={(userRole?.toLowerCase() === "admin" ? "admin" : "user") as "user" | "admin"} />;
+                return <ClaimsSection/>;
             default:
                 return (
                     <div className="space-y-6">

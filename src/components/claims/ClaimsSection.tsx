@@ -120,50 +120,43 @@ import {
   TabsTrigger,
   ScrollArea,
 } from "@hdfclife-insurance/one-x-ui";
+
 import ClaimsTable from "./ClaimsTable";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchClaims } from "../../store/slices/claimsSlice";
 
-type Props = {
-  userRole: "user" | "admin";
-};
-
 const TABS = ["All", "Pending", "Approved", "Rejected"] as const;
 
-export default function ClaimsSection({ userRole }: Props) {
+export default function ClaimsSection() {
   const dispatch = useAppDispatch();
+
+  // ✔ REAL role + userId from Redux
+  const role = useAppSelector((s) => s.user.role)!;
+  const userId = useAppSelector((s) => s.user.userId)!;
+
   const claims = useAppSelector((s) => s.claims.claims);
   const loading = useAppSelector((s) => s.claims.loading);
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("All");
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const role = localStorage.getItem("role") || "user";
-  const userId = localStorage.getItem("userId") || "USER001";
+  
 
-  // Fetch claims when component mounts or when activeTab/userRole change.
+
   const fetchClaimsData = useCallback(() => {
     const status = activeTab === "All" ? undefined : activeTab;
-    const userOnly = userRole === "user";
+    const userOnly = role === "USER"; // normal user only sees his own claims
 
-    console.log("🔄 Fetching claims with params:", {
+    console.log("🔄 Fetching claims:", {
       status,
       userOnly,
-      activeTab,
+      role,
+      userId,
     });
-    dispatch(
-      fetchClaims({
-        status,
-        userOnly,
-        role: userRole,
-        userId: "USER001", // Replace with actual user ID
-      })
-    )
-      .then(() => {
-        setDataLoaded(true);
-      })
-      .catch((error) => {
-        console.error("❌ Error fetching claims:", error);
-      });
-  }, [dispatch, activeTab, userRole]); // ← Removed `loading` dependency
+
+    dispatch(fetchClaims({ status, userOnly, role, userId })).catch((err) =>
+      console.error("❌ Error fetching claims:", err)
+    );
+  }, [dispatch, activeTab, role, userId]);
+
+  if (!role || !userId) return;
 
   useEffect(() => {
     fetchClaimsData();
@@ -178,8 +171,8 @@ export default function ClaimsSection({ userRole }: Props) {
 
   const handleTabChange = useCallback(
     (details: { value: string }) => {
-      const newVal = details.value as (typeof TABS)[number];
-      if (newVal !== activeTab) setActiveTab(newVal);
+      const newTab = details.value as (typeof TABS)[number];
+      if (newTab !== activeTab) setActiveTab(newTab);
     },
     [activeTab]
   );
@@ -191,17 +184,11 @@ export default function ClaimsSection({ userRole }: Props) {
       </Text>
 
       <div className="bg-blue-100 p-2 text-xs">
-        DEBUG: Claims loaded = {claims.length} | Loading ={" "}
-        {loading ? "Yes" : "No"} | Tab = {activeTab} | Data Loaded ={" "}
-        {dataLoaded ? "Yes" : "No"}
+        DEBUG: userId = {userId} | role = {role} | Claims = {claims.length} | Loading ={" "}
+        {loading ? "Yes" : "No"}
       </div>
 
-      <Tabs
-        size="sm"
-        value={activeTab}
-        onValueChange={handleTabChange}
-        variant="underline"
-      >
+      <Tabs size="sm" value={activeTab} onValueChange={handleTabChange} variant="underline">
         <ScrollArea>
           <TabsList>
             {TABS.map((tab) => (
@@ -212,11 +199,10 @@ export default function ClaimsSection({ userRole }: Props) {
           </TabsList>
         </ScrollArea>
 
-        {/* IMPORTANT: render only the active tab's content to avoid remounting all tables */}
         <TabsContent value={activeTab}>
           <ClaimsTable
             filter={activeTab === "All" ? undefined : activeTab}
-            userRole={userRole}
+            userRole={role === "ADMIN" ? "admin" : "user"}
           />
         </TabsContent>
       </Tabs>
