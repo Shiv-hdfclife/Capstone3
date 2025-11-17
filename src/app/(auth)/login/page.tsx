@@ -118,6 +118,7 @@ const Login = () => {
                 const userPayload = {
                     name: userData.name || username, // Fallback to username if name not provided
                     role: userData.role || "User", // Default role if not provided
+                    userId: userData.userId || userData.id || 1, // Get userId from response, fallback to id or default to 1
                     time: userData.time || new Date().toLocaleString() // Current time if not provided
                 };
 

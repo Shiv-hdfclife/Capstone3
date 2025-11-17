@@ -28,7 +28,6 @@ const initialState: ClaimsState = {
   error: null,
 };
 
-// ------------------- FETCH CLAIMS ----------------------
 export const fetchClaims = createAsyncThunk(
   "claims/fetchClaims",
   async (params: {
@@ -46,7 +45,6 @@ export const fetchClaims = createAsyncThunk(
   }
 );
 
-// ------------------- CREATE CLAIM ----------------------
 export const createClaim = createAsyncThunk(
   "claims/createClaim",
   async (data: CreateClaimRequest) => {
@@ -55,7 +53,6 @@ export const createClaim = createAsyncThunk(
   }
 );
 
-// ------------------- UPDATE CLAIM STATUS ----------------------
 export const updateClaimStatus = createAsyncThunk(
   "claims/updateClaimStatus",
   async (params: { claimId: number; status: string; adminNote?: string }) => {

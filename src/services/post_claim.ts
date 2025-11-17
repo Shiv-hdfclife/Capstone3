@@ -12,11 +12,9 @@ export type CreateClaimRequest = {
 };
 
 const API_BASE = "http://192.168.254.58:8083"; 
-// 🚀 In future — ONLY change this line or the endpoint below
 
 export async function postClaim(payload: CreateClaimRequest) {
   const endpoint = "/api/claims/status"; 
-  // 🚀 In future — only modify endpoint here
 
   const url = `${API_BASE}${endpoint}`;
 

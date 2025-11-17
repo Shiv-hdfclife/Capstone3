@@ -33,7 +33,7 @@ async function request(url: string) {
 
 const claimsAPI = {
   async fetchClaims(role: string, userId: string) {
-    const url = `${API_BASE}/api/claims/access?role=${role}&userId=${userId}`;
+    const url = `${API_BASE}/api/claims/access?role=${role}&userId=USER001`;
     return await request(url);
   },
 
