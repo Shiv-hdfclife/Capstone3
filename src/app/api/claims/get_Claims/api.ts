@@ -32,31 +32,51 @@ async function request(url: string) {
 }
 
 const claimsAPI = {
-  async fetchClaims(role: string, userId: string) {
-    const url = `${API_BASE}/api/claims/access?role=${role}&userId=${userId}`;
+
+  async fetchClaims(role: string, _userId: string) {
+
+    const hardcodedUserId = "USER001";
+
+    const url = `${API_BASE}/api/claims/access?role=${role}&userId=${hardcodedUserId}`;
+
     return await request(url);
+
   },
 
-  // Decision API (for admin approve/reject)
   async decisionOnClaim(
+
     claimId: number,
+
     body: { decision: string; note?: string }
+
   ) {
+
     const url = `${API_BASE}/api/claims/${claimId}/decision`;
 
     const res = await fetch(url, {
+
       method: "POST",
+
       headers: { "Content-Type": "application/json" },
+
       body: JSON.stringify(body),
+
     });
 
     if (!res.ok) {
+
       console.error("❌ DECISION API ERROR", res.status);
+
       throw new Error("Failed to update claim status");
+
     }
 
     return await res.json();
+
   },
+
 };
+
+
 
 export default claimsAPI;

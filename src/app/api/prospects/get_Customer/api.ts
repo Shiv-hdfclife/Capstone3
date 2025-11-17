@@ -30,7 +30,7 @@ async function request(url: string) {
 const api = {
   async fetchCustomers(role: string, userId: string): Promise<Customer[]> {
 
-    const url = `${API_BASE}/api/policies/user/${userId}`;
+    const url = `${API_BASE}/api/policies/user/USER001`; // TEMP FIXED USER001
 
     return await request(url);
   },
