@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../app/api/prospects/get_Customer/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../../app/api/prospects/get_Customer/api";
 
 export interface Customer {
   policyId: number;
@@ -26,7 +26,7 @@ const initialState: CustomersState = {
 };
 
 export const fetchCustomers = createAsyncThunk(
-  'customers/fetchCustomers',
+  "customers/fetchCustomers",
   async (_, { getState }) => {
     const state = getState() as any;
 
@@ -34,12 +34,8 @@ export const fetchCustomers = createAsyncThunk(
     let role = state.user?.role as string | null;
     let userId = state.user?.userId as string | null;
 
-    //  SAFETY FALLBACKS so API ALWAYS FIRES
-    if (!role) {
-      role = "user";           // default role
-    }
-    if (!userId) {
-      userId = "USER001";      // default user id
+    if (!role || !userId) {
+      throw new Error("User not authenticated — cannot fetch customers");
     }
 
     console.log("fetchCustomers thunk → calling API with:", { role, userId });
@@ -50,7 +46,7 @@ export const fetchCustomers = createAsyncThunk(
 );
 
 const customersSlice = createSlice({
-  name: 'customers',
+  name: "customers",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -69,7 +65,7 @@ const customersSlice = createSlice({
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch customers';
+        state.error = action.error.message || "Failed to fetch customers";
       });
   },
 });
