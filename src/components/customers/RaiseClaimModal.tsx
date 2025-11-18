@@ -83,16 +83,16 @@ export default function RaiseClaimModal({
     }
 
     if (!userId) {
-       alert("User not logged in");
-       return;
+      alert("User not logged in");
+      return;
     }
 
     setLoading(true);
     try {
       await dispatch(
         createClaim({
-          claimId: `CLM${Date.now()}`,
-          userId: userId!,
+          claimId: `CLM001`,
+          userId: "USER001",
           claimAmount: amount,
           policyNumber: customer.policyNumber,
           aadhaarSubmitted: aadhar,

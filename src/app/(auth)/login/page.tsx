@@ -112,14 +112,31 @@ const Login = () => {
             if (response.ok && data.success) {
                 console.log('✅ Login successful, storing user data and redirecting...');
 
-                // Extract user data from response
                 const userData = data.user || {};
+                let userId = 1; // Default fallback as number
+
+                try {
+                    // Try to get user ID from backend response
+                    if (userData.userId) {
+                        userId = Number(userData.userId) || 1;
+                    } else if (userData.id) {
+                        userId = Number(userData.id) || 1;
+                    } else {
+                        // Generate from username as last resort
+                        userId = 1; // default numeric value
+                    }
+                } catch (error) {
+                    console.warn("Could not extract userId, using default");
+                    userId = 1;
+                }
+
                 const userPayload = {
-                    name: userData.name || username, // Fallback to username if name not provided
-                    role: userData.role || "User", // Default role if not provided
-                    time: userData.time || new Date().toLocaleString(), // Current time if not provided
-                    userId: userData.userId || userData.id || username, // Use userId or fallback to username
-                    token: data.token || data.access_token || "" // Use token from response
+                    id: userId,
+                    username: userData.username || username,
+                    email: userData.email || '',
+                    name: userData.name || '',
+                    phoneNumber: userData.phoneNumber || '',
+                    ...userData
                 };
 
                 console.log('👤 Storing user data in Redux:', userPayload);

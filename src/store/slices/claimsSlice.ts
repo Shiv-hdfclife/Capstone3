@@ -41,9 +41,9 @@ export const fetchClaims = createAsyncThunk(
   }) => {
     const response = await claimsAPI.fetchClaims(params.role, params.userId);
 
-    // if (params.status) {
-    //   return response.filter((c: Claim) => c.status === params.status);
-    // }
+    if (params.status) {
+      return response.filter((c: Claim) => c.status === params.status);
+    }
     return response;
   }
 );

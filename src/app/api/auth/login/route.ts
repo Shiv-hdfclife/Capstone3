@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
         // Call Keycloak token endpoint with correct headers
         const res = await axios.post(
-            "http://192.168.254.77:8080/realms/intelli-claim/protocol/openid-connect/token",
+            "http://localhost:8080/realms/intelli-claim/protocol/openid-connect/token",
             formData.toString(),
             {
                 headers: {

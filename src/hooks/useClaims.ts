@@ -18,7 +18,7 @@ export default function useClaims() {
     fetchCustomers: () => dispatch(fetchCustomers()),
     // Aliases for backward compatibility
     raiseClaim: (claimData: any) => dispatch(createClaim(claimData)),
-    decisionOnClaim: (claimId: number, decision: string, note?: string) => 
+    decisionOnClaim: (claimId: number, decision: string, note?: string) =>
       dispatch(updateClaimStatus({ claimId, status: decision, adminNote: note }))
   };
 }
