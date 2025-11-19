@@ -18,13 +18,16 @@ export type Claim = {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://192.168.254.58:8083";
+  process.env.NEXT_PUBLIC_API_BASE || "http://192.168.254.58:8082";
 
 async function request(url: string) {
   console.log("🔥 GET CLAIMS →", url);
 
   // Get access token using the auth utility
   const accessToken = await getAuthToken();
+
+  console.log("🔑 DECISION TOKEN (raw) =", accessToken);
+
   console.log('🔑 Access Token for GET:', accessToken ? 'Found' : 'Not Found');
 
   const headers: Record<string, string> = {

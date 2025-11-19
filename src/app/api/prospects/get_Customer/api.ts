@@ -9,7 +9,7 @@ export type Customer = {
   createdDate: string;
 };
 
-const API_BASE = "http://192.168.254.58:8083";
+const API_BASE = "http://192.168.254.58:8082";
 
 async function request(url: string) {
   console.log("🔥 HITTING BACKEND:", url);

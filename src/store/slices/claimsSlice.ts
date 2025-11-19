@@ -95,7 +95,9 @@ const claimsSlice = createSlice({
         state.error = action.error.message || "Failed to fetch claims";
       })
       .addCase(createClaim.fulfilled, (state, action) => {
-        state.claims.unshift(action.payload);
+        // The API returns a message, not a claim object
+        // We'll need to refetch claims or handle this differently
+        console.log('Claim created:', action.payload);
       })
       .addCase(updateClaimStatus.fulfilled, (state, action) => {
         const updated = action.payload as Claim;
